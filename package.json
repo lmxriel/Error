@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@headlessui/react": "^2.1.10",
+    "react-to-print": "^3.0.2"
+  }
+}
