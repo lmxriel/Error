@@ -24,7 +24,7 @@ function AuthModalAdd({ isOpen, onClose, onAdd, formData, handleInputChange }) {
                 onChange={handleInputChange}
                 className="w-full p-2 border rounded shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
-                autocomplete="username" // Add this line
+                autoComplete="username" // Add this line
               />
             </div>
             <input
@@ -35,7 +35,7 @@ function AuthModalAdd({ isOpen, onClose, onAdd, formData, handleInputChange }) {
               required
               value={formData.password}
               onChange={handleInputChange}
-              autocomplete="new-password" // Add this line
+              autoComplete="new-password" // Add this line
             />
           </div>
         </form>

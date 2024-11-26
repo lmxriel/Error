@@ -71,7 +71,6 @@ function RecordPage() {
                       <th className="text-center py-2 px-4">Date</th>
                       <th className="text-center py-2 px-4">Time in</th>
                       <th className="text-center py-2 px-4">Time out</th>
-                      <th className="text-center py-2 px-4">Work Duration</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -93,9 +92,6 @@ function RecordPage() {
                       </td>
                       <td className="text-center py-2 px-4 border-t-2 border-gray-500">
                         12:30 PM
-                      </td>
-                      <td className="text-center py-2 px-4 border-t-2 border-gray-500">
-                        2:00
                       </td>
                     </tr>
                   </tbody>

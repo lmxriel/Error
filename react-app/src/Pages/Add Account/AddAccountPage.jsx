@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../Components/Sidebars/AdminSidebar";
-import Modal from "../../Components/Modals/AuthModalAdd"; // Assuming you will update this modal to include username and password fields
+import Modal from "../../Components/Modals/AuthModalAdd";
+import AuthFingerprintModal from "../../Components/Modals/AuthFingerprintModal";
 
-// Utility function to convert strings to Title Case
 const toTitleCase = (str) => {
   return str
     .toLowerCase()
@@ -13,29 +13,33 @@ const toTitleCase = (str) => {
 
 function AddAccountPage() {
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isFingerprintModalOpen, setFingerprintModalOpen] = useState(false);
   const [accounts, setAccounts] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // Add state for search query
-  const [filteredAccounts, setFilteredAccounts] = useState([]); // Add state for filtered accounts
+  const [searchQuery, setSearchQuery] = useState("");
+  const [userId, setUserId] = useState(null);
+  const [filteredAccounts, setFilteredAccounts] = useState([]);
   const [formData, setFormData] = useState({
     user_id: "",
     first_name: "",
     middle_name: "",
     last_name: "",
-    username: "", // New field for username
-    password: "", // New field for password
+    username: "",
+    password: "",
   });
+  const [accountAdded, setAccountAdded] = useState(false);
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
+  const openFingerprintModal = () => setFingerprintModalOpen(true);
+  const closeFingerprintModal = () => setFingerprintModalOpen(false);
 
-  // Fetch accounts from the backend
   useEffect(() => {
     fetch("http://localhost:8081/user_accounts")
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data)) {
           setAccounts(data);
-          setFilteredAccounts(data); // Initialize filtered accounts
+          setFilteredAccounts(data);
         } else {
           console.error("Expected an array but received:", data);
           setAccounts([]);
@@ -44,7 +48,6 @@ function AddAccountPage() {
       .catch((error) => console.error("Error fetching accounts:", error));
   }, []);
 
-  // Handle search query and filter the accounts
   const handleSearchChange = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
@@ -54,28 +57,19 @@ function AddAccountPage() {
         account.middle_name.toLowerCase().includes(query) ||
         account.last_name.toLowerCase().includes(query)
     );
-    setFilteredAccounts(filtered); // Update filtered accounts based on search query
+    setFilteredAccounts(filtered);
   };
 
-  // Update handleInputChange to format specific fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (
-      name === "first_name" ||
-      name === "middle_name" ||
-      name === "last_name"
-    ) {
-      setFormData({
-        ...formData,
-        [name]: toTitleCase(value), // Convert these fields to title case
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+    setFormData({
+      ...formData,
+      [name]:
+        name === "first_name" || name === "middle_name" || name === "last_name"
+          ? toTitleCase(value)
+          : value,
+    });
   };
 
   const handleAddAccount = () => {
@@ -85,33 +79,30 @@ function AddAccountPage() {
   const addAccount = () => {
     fetch("http://localhost:8081/add_user", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     })
       .then((response) => {
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
-        }
         return response.json();
       })
       .then((data) => {
-        console.log("User added successfully:", data);
-        // Refetch the accounts from the backend to get the latest data
+        const userId = data.user_id;
+        console.log("User added successfully, user_id:", userId);
+        setUserId(userId); // Store user ID for fingerprint modal
+        openFingerprintModal(); // Open the fingerprint modal after user creation
+        closeModal(); // Close the account creation modal
+
+        // Refresh account list
         fetch("http://localhost:8081/user_accounts")
           .then((response) => response.json())
           .then((data) => {
-            if (Array.isArray(data)) {
-              setAccounts(data);
-              setFilteredAccounts(data); // Update filtered accounts with new data
-            } else {
-              setAccounts([]);
-            }
+            setAccounts(data);
+            setFilteredAccounts(data);
           })
           .catch((error) => console.error("Error fetching accounts:", error));
 
-        // Reset the form
         setFormData({
           user_id: "",
           first_name: "",
@@ -120,12 +111,35 @@ function AddAccountPage() {
           username: "",
           password: "",
         });
-        closeModal();
       })
-      .catch((error) => {
-        console.error("Error adding user:", error);
-      });
+      .catch((error) => console.error("Error adding user:", error));
   };
+
+  const handleSaveFingerprint = (userId) => {
+    fetch("http://localhost:8081/store-fingerprint", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok)
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Fingerprint saved successfully", data);
+        closeFingerprintModal();
+      })
+      .catch((error) => console.error("Error saving fingerprint:", error));
+  };
+
+  useEffect(() => {
+    if (accountAdded) {
+      setAccountAdded(false);
+    }
+  }, [accountAdded]);
 
   return (
     <>
@@ -143,8 +157,8 @@ function AddAccountPage() {
                 <input
                   type="text"
                   placeholder="Search"
-                  value={searchQuery} // Bind search query to input
-                  onChange={handleSearchChange} // Handle search query change
+                  value={searchQuery}
+                  onChange={handleSearchChange}
                   className="p-2 pl-4 pr-10 w-full border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
                 <span className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -240,16 +254,14 @@ function AddAccountPage() {
                     <tbody>
                       {filteredAccounts.map((account, index) => (
                         <tr key={account.user_id}>
-                          <td className="text-center py-2 px-4 border-t">
-                            {index + 1}
-                          </td>
-                          <td className="text-center py-2 px-4 border-t">
+                          <td className="text-center py-2 px-4">{index + 1}</td>
+                          <td className="text-center py-2 px-4">
                             {account.first_name}
                           </td>
-                          <td className="text-center py-2 px-4 border-t">
+                          <td className="text-center py-2 px-4">
                             {account.middle_name}
                           </td>
-                          <td className="text-center py-2 px-4 border-t">
+                          <td className="text-center py-2 px-4">
                             {account.last_name}
                           </td>
                         </tr>
@@ -262,13 +274,23 @@ function AddAccountPage() {
           </div>
         </div>
       </div>
+
       {isModalOpen && (
         <Modal
           isOpen={isModalOpen}
           onClose={closeModal}
           onAdd={addAccount}
           formData={formData}
-          handleInputChange={handleInputChange} // Pass handleInputChange to handle username/password inputs
+          handleInputChange={handleInputChange}
+        />
+      )}
+
+      {isFingerprintModalOpen && (
+        <AuthFingerprintModal
+          isOpen={isFingerprintModalOpen}
+          onClose={closeFingerprintModal}
+          onSaveFingerprint={handleSaveFingerprint}
+          userId={userId}
         />
       )}
     </>

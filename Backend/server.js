@@ -1,9 +1,13 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const cors = require("cors");
+const moment = require("moment");
 
 const app = express();
-app.use(express.json());
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.json({ limit: "10mb" })); // Adjust as needed
 
 const corsOptions = {
   origin: "http://localhost:5173",
@@ -117,7 +121,6 @@ app.get("/admin_login/:user_id", (req, res) => {
     return res.status(200).json({ role: data[0].role });
   });
 });
-
 // Fetch all facultys from 'faculty' table
 app.get("/user_accounts", (req, res) => {
   const sql = "SELECT * FROM faculty WHERE role !='admin'";
@@ -129,7 +132,6 @@ app.get("/user_accounts", (req, res) => {
     return res.json(data);
   });
 });
-
 // Update user password
 app.put("/user_accounts/change_password/:user_id", (req, res) => {
   const { user_id } = req.params;
@@ -163,17 +165,17 @@ app.put("/user_accounts/change_password/:user_id", (req, res) => {
     });
   });
 });
-
 // Add a new faculty to 'faculty' table
 app.post("/add_user", (req, res) => {
-  const { first_name, middle_name, last_name, username, password, user_id } =
-    req.body;
+  const { first_name, middle_name, last_name, username, password } = req.body;
+  const role = "user"; // Static role
 
   const sql =
-    "INSERT INTO faculty (first_name, middle_name, last_name, username, password) VALUES (?, ?, ?, ?, ?)";
+    "INSERT INTO faculty (first_name, middle_name, last_name, username, password, role) VALUES (?, ?, ?, ?, ?, ?)";
+
   db.query(
     sql,
-    [first_name, middle_name, last_name, username, password, user_id],
+    [first_name, middle_name, last_name, username, password, role],
     (err, result) => {
       if (err) {
         console.error("Error inserting into faculty table:", err);
@@ -181,9 +183,13 @@ app.post("/add_user", (req, res) => {
           .status(500)
           .json({ error: "Failed to add user", details: err });
       }
-      return res
-        .status(201)
-        .json({ message: "User added successfully", result });
+
+      // Send back the `user_id` of the newly inserted record
+      const userId = result.insertId;
+      return res.status(201).json({
+        message: "User added successfully",
+        user_id: userId,
+      });
     }
   );
 });
@@ -203,7 +209,7 @@ app.get("/subject_api", (req, res) => {
     FROM 
       faculty
     LEFT JOIN 
-      faculty_subject ON faculty.user_id = faculty_subject.faculty_id
+      faculty_subject ON faculty.user_id = faculty_subject.user_id
     WHERE 
       faculty.username != 'admin'
   `;
@@ -227,22 +233,28 @@ app.post("/subject_add", (req, res) => {
     user_id,
   } = req.body;
 
-  // Ensure that the user_id is passed correctly as faculty_id
+  // Get the current date in YYYY-MM-DD format
+  const currentDate = new Date().toISOString().split("T")[0];
+
+  // Convert timeIn and timeOut to proper TIMESTAMP format (YYYY-MM-DD HH:MM:SS)
+  const formatTime = (time) => {
+    const [hours, minutes] = time.split(":");
+    const hour24 = parseInt(hours, 10); // Convert to 24-hour format
+    const formattedHours = hour24.toString().padStart(2, "0"); // Ensure 2 digits
+    return `${currentDate} ${formattedHours}:${minutes}:00`; // Append seconds
+  };
+
+  const timeIn = formatTime(subject_timeIn);
+  const timeOut = formatTime(subject_timeOut);
+
   const sql = `
-    INSERT INTO faculty_subject (subject_code, subject_description, subject_timeIn, subject_timeOut, faculty_id) 
+    INSERT INTO faculty_subject (subject_code, subject_description, subject_timeIn, subject_timeOut, user_id) 
     VALUES (?, ?, ?, ?, ?)
   `;
 
-  // Execute the query, using user_id as faculty_id
   db.query(
     sql,
-    [
-      subject_code,
-      subject_description,
-      subject_timeIn,
-      subject_timeOut,
-      user_id,
-    ],
+    [subject_code, subject_description, timeIn, timeOut, user_id],
     (err, result) => {
       if (err) {
         console.error("Error adding subject:", err);
@@ -296,7 +308,6 @@ app.put("/user_accounts_reset_password/:user_id", (req, res) => {
       .json({ message: "Password reset successfully", result });
   });
 });
-
 // Delete a faculty from 'faculty' table
 app.delete("/subject_delete/:subject_id", (req, res) => {
   const { subject_id } = req.params; // Use subject_id
@@ -314,14 +325,13 @@ app.delete("/subject_delete/:subject_id", (req, res) => {
       .json({ message: "Subject deleted successfully", result });
   });
 });
-
 // Delete a faculty from 'faculty' table
 app.delete("/user_accounts_delete/:user_id", (req, res) => {
   const { user_id } = req.params;
 
   // SQL queries to delete from all related tables
-  const deleteSubjects = "DELETE FROM faculty_subject WHERE faculty_id = ?";
-
+  const deleteSubjects = "DELETE FROM faculty_subject WHERE user_id = ?";
+  const deleteBiometric = "DELETE FROM faculty_biometric WHERE user_id = ?";
   const deleteFaculty = "DELETE FROM faculty WHERE user_id = ?";
 
   // Start with deleting from related tables, then faculty
@@ -332,19 +342,267 @@ app.delete("/user_accounts_delete/:user_id", (req, res) => {
         .status(500)
         .json({ error: "Failed to delete subjects", details: err });
     }
-    db.query(deleteFaculty, [user_id], (err, result) => {
+
+    // Delete from faculty_biometric table
+    db.query(deleteBiometric, [user_id], (err, result) => {
       if (err) {
-        console.error("Error deleting from faculty table:", err);
+        console.error("Error deleting from faculty_biometric table:", err);
         return res
           .status(500)
-          .json({ error: "Failed to delete user", details: err });
+          .json({ error: "Failed to delete biometric data", details: err });
       }
 
-      return res.status(200).json({
-        message: "User and related data deleted successfully",
-        result,
+      // Delete from faculty table
+      db.query(deleteFaculty, [user_id], (err, result) => {
+        if (err) {
+          console.error("Error deleting from faculty table:", err);
+          return res
+            .status(500)
+            .json({ error: "Failed to delete user", details: err });
+        }
+
+        return res.status(200).json({
+          message: "User and related data deleted successfully",
+          result,
+        });
       });
     });
+  });
+});
+
+app.post("/store-fingerprint", (req, res) => {
+  console.log("Raw Request Data:", req.body);
+
+  const fingerprint = parseInt(req.body.fingerprint, 10); // Parse fingerprint as an integer
+  if (isNaN(fingerprint)) {
+    return res.status(400).send("Fingerprint data is missing or invalid!");
+  }
+
+  db.beginTransaction((err) => {
+    if (err) {
+      console.error("Transaction start failed:", err);
+      return res.status(500).send("Transaction start failed.");
+    }
+
+    const getLastUserIdQuery =
+      "SELECT user_id FROM faculty ORDER BY user_id DESC LIMIT 1";
+    db.query(getLastUserIdQuery, (err, results) => {
+      if (err) {
+        console.error("Error retrieving latest user_id:", err);
+        return db.rollback(() =>
+          res.status(500).send("Error retrieving user information.")
+        );
+      }
+
+      if (results.length === 0) {
+        console.warn("No users found in the faculty table.");
+        return db.rollback(() =>
+          res.status(400).send("No users found in the faculty table.")
+        );
+      }
+
+      const userId = results[0].user_id;
+      console.log("Latest user_id retrieved:", userId);
+
+      const countFingerprintsQuery =
+        "SELECT COUNT(*) AS fingerprintCount FROM faculty_biometric WHERE user_id = ?";
+      db.query(countFingerprintsQuery, [userId], (err, countResults) => {
+        if (err) {
+          console.error("Error counting fingerprints:", err);
+          return db.rollback(() =>
+            res.status(500).send("Error counting fingerprints.")
+          );
+        }
+
+        const fingerprintCount = countResults[0].fingerprintCount;
+        console.log(
+          "Current fingerprint count for user_id",
+          userId,
+          ":",
+          fingerprintCount
+        );
+
+        if (fingerprintCount >= 5) {
+          console.warn("Fingerprint limit reached for user_id", userId);
+          return db.rollback(() =>
+            res.status(400).send("Fingerprint limit reached for this user.")
+          );
+        }
+
+        const insertFingerprintQuery =
+          "INSERT INTO faculty_biometric (user_id, fingerprint) VALUES (?, ?)";
+        db.query(
+          insertFingerprintQuery,
+          [userId, fingerprint], // Save fingerprint as an integer
+          (err) => {
+            if (err) {
+              console.error("Error saving fingerprint:", err);
+              return db.rollback(() =>
+                res.status(500).send("Error saving fingerprint data.")
+              );
+            }
+
+            db.commit((err) => {
+              if (err) {
+                console.error("Transaction commit failed:", err);
+                return db.rollback(() =>
+                  res.status(500).send("Transaction commit failed.")
+                );
+              }
+
+              console.log("Fingerprint saved successfully for user_id", userId);
+              res.status(200).send("Fingerprint saved successfully.");
+            });
+          }
+        );
+      });
+    });
+  });
+});
+
+let scanCount = 0; // Initialize scan count
+let thresholdReached = false; // Initialize threshold flag
+
+app.post("/receive-fingerprint", (req, res) => {
+  const { fingerprint } = req.body;
+  if (!fingerprint) {
+    return res.status(400).send("Fingerprint data missing");
+  }
+
+  console.log("Received fingerprint in JSON format:", fingerprint);
+
+  // Increment the scan count if threshold hasn't been reached
+  if (!thresholdReached) {
+    scanCount += 1;
+    console.log(`Scan count incremented. Current count: ${scanCount}`);
+  }
+
+  // Check if scan count has reached the threshold
+  if (scanCount >= 5) {
+    thresholdReached = true;
+    console.log("Scan count threshold reached.");
+
+    res.status(200).json({
+      success: true,
+      message: "Scan count threshold reached!",
+    });
+
+    // Reset scan count and threshold flag after reaching the threshold
+    setTimeout(() => {
+      scanCount = 0;
+      thresholdReached = false;
+      console.log("Scan count and threshold flag reset.");
+    }, 5000); // Reset after 5 seconds (adjust as needed)
+  } else {
+    res.status(200).json({
+      success: true,
+      message: `Scan ${scanCount} of 5 completed.`,
+    });
+  }
+});
+// Endpoint for React app to fetch the current scan status
+app.get("/scan-status", (req, res) => {
+  res.status(200).json({
+    success: true,
+    scanCount: scanCount,
+    thresholdReached: thresholdReached, // Send flag to client
+    message: thresholdReached
+      ? "Threshold reached!"
+      : `Scan ${scanCount} of 5 completed.`,
+  });
+
+  // Reset scan count and threshold after sending the threshold reached message
+  if (thresholdReached) {
+    scanCount = 0;
+    thresholdReached = false;
+  }
+});
+
+app.post("/check-fingerprint", (req, res) => {
+  let { fingerprint } = req.body;
+
+  // Ensure the fingerprint is provided and convert it to an integer
+  if (!fingerprint || fingerprint.length === 0) {
+    console.error("Fingerprint data missing!");
+    return res.status(400).json({ error: "Fingerprint data is required" });
+  }
+
+  // Attempt to parse the fingerprint into an integer
+  fingerprint = parseInt(fingerprint, 10);
+
+  if (isNaN(fingerprint)) {
+    console.error("Invalid fingerprint data: not an integer.");
+    return res
+      .status(400)
+      .json({ error: "Fingerprint must be a valid integer" });
+  }
+
+  // Query to get fingerprint, user_id, and first_name from the database
+  const query = `
+    SELECT fb.fingerprint, f.user_id, f.first_name 
+    FROM faculty_biometric fb
+    INNER JOIN faculty f ON fb.user_id = f.user_id
+    WHERE fb.fingerprint = ?`;
+
+  db.query(query, [fingerprint], (err, results) => {
+    if (err) {
+      console.error("Error executing query:", err);
+      return res.status(500).json({ error: "Database query error" });
+    }
+
+    if (!results || results.length === 0) {
+      console.warn("No fingerprints found matching the provided data.");
+      return res.status(404).json({ match: false, message: "No match found" });
+    }
+
+    // Extract matched user data
+    const matchedUser = results[0]; // Only one match is expected for a unique fingerprint
+    const { first_name } = matchedUser;
+
+    // Log the matched first name
+    console.log("Matched first name:", first_name);
+
+    // Return the response
+    return res.json({
+      match: true,
+      first_name: first_name,
+    });
+  });
+});
+
+app.get("/last-fingerprint-id", (req, res) => {
+  const query =
+    "SELECT COALESCE(MAX(fingerprint), 0) AS lastId FROM faculty_biometric";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error retrieving last fingerprint ID:", err);
+      return res.status(500).send("Error retrieving last fingerprint ID.");
+    }
+    const lastId = results[0].lastId;
+    res.send(lastId.toString()); // Send as plain text
+  });
+});
+
+app.post("/log-id", (req, res) => {
+  const { fingerprint } = req.body;
+
+  if (fingerprint === undefined) {
+    return res.status(400).json({ error: "Fingerprint ID is required." });
+  }
+
+  // Get current date and time in the format 'YYYY-MM-DD HH:mm:ss' (24-hour format)
+  const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
+
+  // Log the fingerprint and the current time
+  console.log(
+    `Received fingerprint ID: ${fingerprint}, Time: ${currentDateTime}`
+  );
+
+  // Respond with a success message and the received fingerprint and time
+  res.status(200).json({
+    message: "Fingerprint ID logged successfully",
+    fingerprint,
+    time: currentDateTime,
   });
 });
 
