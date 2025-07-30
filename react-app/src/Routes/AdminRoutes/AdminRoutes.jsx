@@ -15,7 +15,7 @@ const DashboardRoute = {
 };
 
 const RecordRoute = {
-  path: "/account-record",
+  path: "/account-record==",
   element: <RecordPage />,
 };
 
