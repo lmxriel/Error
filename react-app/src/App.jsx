@@ -1,11 +1,9 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import {
-  AdminLoginRoute,
-  AddAccountRoute,
-  AddSubjectRoute,
   DashboardRoute,
+  LoginRoute,
   RecordRoute,
-  UpdateAccountRoute,
+  ChangePasswordRoute,
 } from "./Routes/AdminRoutes/AdminRoutes";
 import {
   UserLoginRoute,
@@ -15,12 +13,10 @@ import {
   UserChangepasswordRoute,
 } from "./Routes/UserRoutes/UserRoutes";
 const routers = createBrowserRouter([
-  AdminLoginRoute,
+  LoginRoute,
   DashboardRoute,
-  AddAccountRoute,
-  AddSubjectRoute,
-  UpdateAccountRoute,
   RecordRoute,
+  ChangePasswordRoute,
   UserLoginRoute,
   UserDashboardRoute,
   UserReportRoute,

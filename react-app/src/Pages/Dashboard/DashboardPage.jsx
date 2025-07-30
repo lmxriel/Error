@@ -1,69 +1,271 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebars/AdminSidebar";
-import Profile from "../Dashboard/Profile.svg";
+import Logo from "../Dashboard/Logo.png";
+import Setting from "../Dashboard/Setting.svg";
+
+const API_BASE_URL = "http://localhost:8081";
 
 function DashboardPage() {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
+  const [userCount, setUserCount] = useState(0);
+  const [pendingAdoptions, setPendingAdoptions] = useState(0);
+  const [scheduledAppointments, setScheduledAppointments] = useState(0);
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [pets, setPets] = useState([]);
+  const [adoptionRequests, setAdoptionRequests] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+
+  const handleSignOut = () => {
+    localStorage.removeItem("loggedInAdmin");
+    navigate("/admin/login");
+  };
+
+  const goToChangePassword = () => {
+    navigate("/admin/change-password");
+  };
 
   useEffect(() => {
-    // Get the logged-in user from localStorage
     const loggedInAdmin = JSON.parse(localStorage.getItem("loggedInAdmin"));
+    if (!loggedInAdmin) return;
 
-    // If no user is logged in, redirect to login page
-    if (!loggedInAdmin) {
-      navigate("/"); // Redirect to login page if no user is found in local storage
-      return; // Stop further execution if the user is not logged in
-    }
+    async function fetchDashboardData() {
+      try {
+        const [users, adoptions, appointments] = await Promise.all([
+          fetch(`${API_BASE_URL}/users/count`).then((res) => res.json()),
+          fetch(`${API_BASE_URL}/adoptions/pending/count`).then((res) => res.json()),
+          fetch(`${API_BASE_URL}/appointments/scheduled/count`).then((res) => res.json()),
+        ]);
 
-    // If user is logged in, check their role
-    if (loggedInAdmin && loggedInAdmin.user_id) {
-      // Fetch the user's role from the backend based on user_id
-      async function fetchUserRole() {
-        try {
-          const response = await fetch(
-            `http://localhost:8081/admin_login/${loggedInAdmin.user_id}`
-          );
-          const data = await response.json();
-
-          if (data.role) {
-            // Check if the user is an admin
-            if (data.role !== "admin") {
-              navigate("/"); // Redirect non-admin users to the homepage
-            }
-          } else {
-            console.error("No role found for the user.");
-          }
-        } catch (error) {
-          console.error("Error fetching user details:", error);
-        }
+        setUserCount(users.count || 0);
+        setPendingAdoptions(adoptions.count || 0);
+        setScheduledAppointments(appointments.count || 0);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
       }
-
-      fetchUserRole();
     }
-  }, [navigate]);
+
+    fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchTabData() {
+      try {
+        if (activeTab === "pets") {
+          const res = await fetch(`${API_BASE_URL}/pets`);
+          const data = await res.json();
+          setPets(data || []);
+        } else if (activeTab === "adoptions") {
+          const res = await fetch(`${API_BASE_URL}/adoptions/pending`);
+          const data = await res.json();
+          setAdoptionRequests(data || []);
+        } else if (activeTab === "appointments") {
+          const res = await fetch(`${API_BASE_URL}/appointments`);
+          const data = await res.json();
+          setAppointments(data || []);
+        } else if (activeTab === "messages") {
+          const res = await fetch(`${API_BASE_URL}/messages`);
+          const data = await res.json();
+          setMessages(data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching tab data:", error);
+      }
+    }
+
+    fetchTabData();
+  }, [activeTab]);
 
   return (
-    <div className="w-full h-auto bg-dashboard-bg flex">
+    <div className="min-h-screen flex">
       <Sidebar />
-      <div className="w-[80%] h-auto bg-dashboard-bg pl-10 pr-10">
-        <div className="flex items-center gap-5 border-b-2 border-b-black pb-5">
-          <img
-            className="ms-10 size-32 caret-transparent"
-            src={Profile}
-            alt="Profile"
-          />
-          <h1 className="text-2xl font-bold caret-transparent cursor-default">
-            Admin
-          </h1>
+      <div className="flex-grow p-6 bg-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <img className="w-10 h-10 rounded-full mr-3" src={Logo} alt="Logo" />
+            <h1 className="text-xl font-semibold text-gray-800">
+              Tacurong City Veterinary Services Office
+            </h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <img
+              src={Setting}
+              alt="Setting"
+              onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+              className="w-10 h-10 p-2 bg-white border border-gray-300 rounded-full"
+            />
+
+            {showSettingsMenu && (
+              <div className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+                <button
+                  onClick={goToChangePassword}
+                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >
+                  Change Password
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="bg-dashboard-bg w-full h-auto mt-5">
-          <h1 className="text-xl caret-transparent text-center cursor-default">
-            Empowering attendance, simplifying tracking. Our Fingerprint
-            Attendance Monitoring System enhances accuracy and efficiency,
-            ensuring seamless and reliable attendance management.
-          </h1>
+
+        <div className="bg-white rounded-md shadow mb-6">
+          <nav className="flex space-x-4 p-2">
+            {["dashboard", "pets", "adoptions", "appointments", "messages"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-md focus:outline-none ${
+                  activeTab === tab ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </nav>
         </div>
+
+        {activeTab === "dashboard" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-md shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-2">User Management</h2>
+              <div className="text-3xl font-bold text-gray-800">{userCount}</div>
+            </div>
+            <div className="bg-white rounded-md shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-2">Adoption Requests</h2>
+              <div className="text-3xl font-bold text-gray-800">{pendingAdoptions}</div>
+            </div>
+            <div className="bg-white rounded-md shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-2">Appointment Management</h2>
+              <div className="text-3xl font-bold text-gray-800">{scheduledAppointments}</div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "pets" && (
+          <div className="bg-white p-6 rounded-md shadow">
+            <h2 className="text-lg font-semibold mb-4">Pet List</h2>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="py-2">Image</th>
+                  <th className="py-2">Name</th>
+                  <th className="py-2">Breed</th>
+                  <th className="py-2">Size</th>
+                  <th className="py-2">Gender</th>
+                  <th className="py-2">Color</th>
+                  <th className="py-2">Weight</th>
+                  <th className="py-2">Status</th>
+                  <th className="py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pets.map((pet, index) => (
+                  <tr key={index} className="border-t border-gray-100 hover:bg-gray-50">
+                    <td className="py-2">
+                      <img src={pet.imageUrl} alt={pet.name} className="w-12 h-12 rounded object-cover" />
+                    </td>
+                    <td className="py-2">{pet.name}</td>
+                    <td className="py-2">{pet.breed}</td>
+                    <td className="py-2">{pet.size}</td>
+                    <td className="py-2">{pet.gender}</td>
+                    <td className="py-2">{pet.color}</td>
+                    <td className="py-2">{pet.weight}</td>
+                    <td className="py-2 font-semibold">
+                      {pet.status === "Approved" && <span className="text-green-600">Approved</span>}
+                      {pet.status === "Pending" && <span className="text-yellow-600">Pending</span>}
+                      {pet.status === "Available" && <span className="text-blue-600">Available</span>}
+                    </td>
+                    <td className="py-2">
+                      <button className="text-blue-500 hover:underline mr-2">Edit</button>
+                      <button className="text-red-500 hover:underline">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === "adoptions" && (
+          <div className="bg-white p-6 rounded-md shadow">
+            <h2 className="text-lg font-semibold mb-4">Pending Adoption Requests</h2>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="py-2">Name</th>
+                  <th className="py-2">Date</th>
+                  <th className="py-2">Status</th>
+                  <th className="py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {adoptionRequests.map((req, index) => (
+                  <tr key={index} className="border-t hover:bg-gray-50">
+                    <td className="py-2">{req.adopterName}</td>
+                    <td className="py-2">{req.dateRequested}</td>
+                    <td className="py-2">{req.status}</td>
+                    <td className="py-2">
+                      <button className="text-green-600 hover:underline mr-2">Approve</button>
+                      <button className="text-red-600 hover:underline">Reject</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === "appointments" && (
+          <div className="bg-white p-6 rounded-md shadow">
+            <h2 className="text-lg font-semibold mb-4">Scheduled Appointments</h2>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="py-2">Name</th>
+                  <th className="py-2">Date</th>
+                  <th className="py-2">Time</th>
+                  <th className="py-2">Service</th>
+                  <th className="py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.map((appt, index) => (
+                  <tr key={index} className="border-t hover:bg-gray-50">
+                    <td className="py-2">{appt.ownerName}</td>
+                    <td className="py-2">{appt.date}</td>
+                    <td className="py-2">{appt.time}</td>
+                    <td className="py-2">{appt.service}</td>
+                    <td className="py-2">{appt.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === "messages" && (
+          <div className="bg-white p-6 rounded-md shadow">
+            <h2 className="text-lg font-semibold mb-4">Messages</h2>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200"></tr>
+              </thead>
+              <tbody>
+                {messages.map((msg, index) => (
+                  <tr key={index} className="border-t hover:bg-gray-50"></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

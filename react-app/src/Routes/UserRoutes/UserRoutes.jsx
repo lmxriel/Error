@@ -1,11 +1,12 @@
-import UserLoginPage from "../../Pages-User/UserLogin/UserLogin";
+import UserLoginPage from "../../Pages/Login/Login";
 import UserDashboardPage from "../../Pages-User/UserDashboard/UserDashboardPage";
 import UserReportPage from "../../Pages-User/UserReports/UserReportPages";
 import UserProfilePage from "../../Pages-User/UserProfile/UserProfilePage";
 import UserChangepasswordPage from "../../Pages-User/UserChangepassword/ChangepasswordPage";
 
+
 const UserLoginRoute = {
-  path: "/user/login",
+  path: "/",
   element: <UserLoginPage />,
 };
 

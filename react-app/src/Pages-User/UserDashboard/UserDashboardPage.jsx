@@ -1,84 +1,121 @@
-import { useState, useEffect } from "react";
-import Sidebar from "../../Components/Sidebars/UserSidebar";
-import Profile from "./Profile.svg";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import DogCatImage from "../UserDashboard/DogCatImage.png"; 
+import PawfectCareLogo from "../UserDashboard/PawfectCareLogo.svg";
 
-function UserDashboardPage() {
-  const [user, setUser] = useState({ first_name: "", last_name: "" });
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Sidebar toggle state
-
-  useEffect(() => {
-    // Get the logged-in user from localStorage
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-
-    if (loggedInUser && loggedInUser.user_id) {
-      // Fetch the user details from the backend based on user_id
-      async function fetchUser() {
-        try {
-          const response = await fetch(
-            `http://localhost:8081/user/${loggedInUser.user_id}`
-          );
-          const data = await response.json();
-          setUser({ first_name: data.first_name, last_name: data.last_name });
-        } catch (error) {
-          console.error("Error fetching user details:", error);
-        }
-      }
-
-      fetchUser();
-    }
-  }, []);
+export default function LandingPage() {
+  const navigate = useNavigate();
 
   return (
-    <>
-      {/* Sidebar toggle button for mobile */}
-      <button
-        className="md:hidden p-2 bg-green-600 text-white fixed top-2 left-2 z-50 transition-transform ease-in-out duration-300 rounded"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-      >
-        {sidebarOpen ? "Close" : "Menu"}
-      </button>
-
-      <div className="flex flex-col md:flex-row w-full h-screen bg-dashboard-bg">
-        {/* Sidebar */}
-        <div
-          className={`fixed inset-0 z-40 md:relative md:inset-auto transition-transform ease-in-out duration-300 transform ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 w-3/4 md:w-1/4 lg:w-1/5 bg-sidebar-bg flex flex-col items-center justify-start pt-10 md:pt-0 md:block`}
-        >
-          <Sidebar />
+    <div className="min-h-screen bg-[#f9f7f7] text-gray-900 relative overflow-hidden">
+      {/* Header */}
+      <div className="flex justify-between items-center px-6 py-4 border-b border-gray-300">
+        <div className="flex items-center gap-2">
+          <img src={PawfectCareLogo} alt="Pawfect Care Logo" className="w-10 h-10" />
+          <span className="text-2xl font-bold">Pawfect Care</span>
         </div>
+        <div className="flex-grow flex justify-center ml-[-150px] gap-10 text-sm font-medium">
+          <button onClick={() => navigate("/about")} className="hover:text-[#ff7e67] transition-colors">About Us</button>
+          <button onClick={() => navigate("/adoption")} className="hover:text-[#ff7e67] transition-colors">Adoption</button>
+          <button onClick={() => navigate("/book")} className="hover:text-[#ff7e67] transition-colors">Book</button>
+        </div>
+        <div>
+          <button onClick={() => navigate("/signin")} className="px-4 py-1 border border-black rounded-full hover:bg-black hover:text-white transition">
+            Sign in
+          </button>
+        </div>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 w-full h-auto p-5 transition-all duration-300 ease-in-out">
-          <div className="flex flex-col items-center md:flex-row gap-5 border-b-2 border-b-black pb-5">
-            <img
-              className="w-24 h-24 md:w-32 md:h-32 rounded-full"
-              src={Profile}
-              alt="Profile"
-            />
-            <p className="text-2xl md:text-3xl capitalize font-bold text-center md:text-left">
-              Welcome!&nbsp;{user.first_name} {user.last_name}
+      {/* Hero Section */}
+      <div className="flex flex-col items-center text-center mt-20 px-4">
+        <h1 className="text-4xl md:text-5xl font-black leading-snug">
+          Every pet deserves <br />
+          <span className="text-4xl md:text-5xl text-[#ff7e67]">love and care.</span>
+        </h1>
+        <div className="relative mt-8">
+          <img src={DogCatImage} alt="Happy dog and cat" className="w-full max-w-xl mx-auto" />
+        </div>
+      </div>
+
+      {/* About Section */}
+      <div className="px-6 md:px-20 py-16 max-w-6xl mx-auto">
+        <h2 className="text-2xl font-extrabold text-[#7c5e3b] mb-6 text-left">WHO WE ARE</h2>
+        <p className="mb-16 text-base text-justify">
+          Pawfect Care is a web-based management system designed to make pet adoption easier and more accessible 
+          for residents of Tacurong City. Our platform connects adopters with loving pets in need of a home 
+          while also providing a seamless way to schedule veterinary consultations. By reducing the need for 
+          manual processing, we help streamline adoption efforts and ensure a smooth experience for adopters, 
+          pet owners, and the Tacurong City Veterinary Services Office.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div>
+            <h3 className="text-xl font-bold text-[#7c5e3b] mb-2 text-left">OUR MISSION</h3>
+            <div className="border-t-4 border-[#7c5e3b] w-16 mb-4"></div>
+            <p className="text-base text-justify">
+              Our mission is to create a more efficient and compassionate pet adoption process while ensuring that 
+              pet owners have easy access to veterinary services. We strive to connect animals with responsible 
+              owners and promote a community where every pet receives the care and love they deserve.
             </p>
           </div>
-          <div className="bg-dashboard-bg w-full h-auto mt-5">
-            <h1 className="text-xl caret-transparent text-center cursor-default">
-              Empowering attendance, simplifying tracking our Fingerprint
-              Attendance Monitoring System enhances accuracy and efficiency,
-              ensuring seamless and reliable attendance management.
-            </h1>
+          <div>
+            <h3 className="text-xl font-bold text-[#7c5e3b] mb-2 text-left">OUR VISION</h3>
+            <div className="border-t-4 border-[#7c5e3b] w-16 mb-4"></div>
+            <p className="text-base text-justify">
+              We envision a future where pet adoption is hassle-free, ensuring that every stray or abandoned pet 
+              finds a loving and responsible home. Through technology, we aim to bridge the gap between adopters and 
+              available pets, making the process simple, transparent, and efficient. Additionally, we seek to improve 
+              pet healthcare by providing an easy-to-use platform for booking consultations and vaccinations.
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Overlay for mobile when sidebar is open */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black opacity-50 z-30 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
-    </>
+      {/* How It Works Section */}
+      <div className="bg-white px-6 md:px-20 py-16">
+        <h2 className="text-xl md:text-2xl font-extrabold text-[#7c5e3b] mb-10">HOW IT WORKS?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-center text-sm">
+          {[
+            { title: "Browse a pet", desc: "View detailed profiles of dogs available for adoption, including their breed, age, and health status." },
+            { title: "Apply for adoption", desc: "Submit an adoption request online to express your interest in providing a home for a pet." },
+            { title: "Schedule a Consultation", desc: "Easily book an appointment to inquire about pet care and health advice." },
+            { title: "Book Vaccination", desc: "Ensure your pet stays healthy by scheduling vaccinations through our platform." },
+            { title: "Stay Updated", desc: "Receive notifications about your adoption application, consultation, and vaccination schedules." },
+          ].map((step, index) => (
+            <div key={index} className="bg-gray-200 p-4 rounded-xl">
+              <h4 className="font-bold mb-2">{step.title}</h4>
+              <p>{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-10 px-6 md:px-20">
+        <div className="text-center mb-6">
+          
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 text-sm gap-8 text-center md:text-left">
+          <div>
+            <h4 className="font-semibold mb-2">Location:</h4>
+            <p>Office of Veterinary Services,<br />
+              Bonifacio Street, Barangay Poblacion,<br />
+              Tacurong, Philippines, 9800</p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-2">Email:</h4>
+            <p>ovstacurong@gmail.com</p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-2">Contact Number:</h4>
+            <p>09705475747</p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-2">Website:</h4>
+            <p>www.pawfectcare.com</p>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
-
-export default UserDashboardPage;

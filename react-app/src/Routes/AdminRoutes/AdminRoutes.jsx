@@ -1,23 +1,12 @@
-import AdminLoginPage from "../../Pages/AdminLoginPage/AdminLoginPage";
-import AddAccountPage from "../../Pages/Add Account/AddAccountPage";
+import LoginPage from "../../Pages/Login/Login";
 import DashboardPage from "../../Pages/Dashboard/DashboardPage";
 import RecordPage from "../../Pages/Records/RecordsPages";
-import UpdateAccountPage from "../../Pages/Update Account/UpdateAccountPage";
-import AddSubjectPage from "../../Pages/Add Subject/AddSubjectPage";
+import PetPage from "../../Pages/Dashboard/PetPage";
+import ChangePassword from "../../Pages/Dashboard/ChangePassword";
 
-const AdminLoginRoute = {
-  path: "/",
-  element: <AdminLoginPage />,
-};
-
-const AddAccountRoute = {
-  path: "/add-account",
-  element: <AddAccountPage />,
-};
-
-const AddSubjectRoute = {
-  path: "/add-subjects",
-  element: <AddSubjectPage />,
+const LoginRoute = {
+  path: "/admin",
+  element: <LoginPage />,
 };
 
 const DashboardRoute = {
@@ -30,16 +19,13 @@ const RecordRoute = {
   element: <RecordPage />,
 };
 
-const UpdateAccountRoute = {
-  path: "/update-account",
-  element: <UpdateAccountPage />,
+const PetRoute = {
+  path: "/pets",
+  element: <PetPage />,
 };
+const ChangePasswordRoute = {
+  path: "/change-password", 
+  element: <ChangePassword/>,
+}
 
-export {
-  AdminLoginRoute,
-  AddAccountRoute,
-  AddSubjectRoute,
-  DashboardRoute,
-  RecordRoute,
-  UpdateAccountRoute,
-};
+export { LoginRoute, DashboardRoute, RecordRoute, PetRoute, ChangePasswordRoute};
