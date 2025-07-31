@@ -11,6 +11,8 @@ import {
   UserReportRoute,
   UserProfileRoute,
   UserChangepasswordRoute,
+  UserAdoptionRoute,
+ 
 } from "./Routes/UserRoutes/UserRoutes";
 const routers = createBrowserRouter([
   LoginRoute,
@@ -22,6 +24,8 @@ const routers = createBrowserRouter([
   UserReportRoute,
   UserProfileRoute,
   UserChangepasswordRoute,
+  UserAdoptionRoute,
+ 
 ]);
 
 function App() {

@@ -5,7 +5,7 @@ import PetPage from "../../Pages/Dashboard/PetPage";
 import ChangePassword from "../../Pages/Dashboard/ChangePassword";
 
 const LoginRoute = {
-  path: "/admin",
+  path: "/admin/login",
   element: <LoginPage />,
 };
 
@@ -15,7 +15,7 @@ const DashboardRoute = {
 };
 
 const RecordRoute = {
-  path: "/account-record==",
+  path: "/account-record",
   element: <RecordPage />,
 };
 

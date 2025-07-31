@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import DogCatImage from "../UserDashboard/DogCatImage.png"; 
+import DodnCatImage from "../UserDashboard/DodnCatImage.png"; 
 import PawfectCareLogo from "../UserDashboard/PawfectCareLogo.svg";
 
 export default function LandingPage() {
@@ -20,26 +20,24 @@ export default function LandingPage() {
           <button onClick={() => navigate("/book")} className="hover:text-[#ff7e67] transition-colors">Book</button>
         </div>
         <div>
-          <button onClick={() => navigate("/signin")} className="px-4 py-1 border border-black rounded-full hover:bg-black hover:text-white transition">
+          <button onClick={() => navigate("/")} className="px-4 py-1 border border-black rounded-full hover:bg-black hover:text-white transition">
             Sign in
           </button>
         </div>
       </div>
 
       {/* Hero Section */}
-      <div className="flex flex-col items-center text-center mt-20 px-4">
-        <h1 className="text-4xl md:text-5xl font-black leading-snug">
-          Every pet deserves <br />
-          <span className="text-4xl md:text-5xl text-[#ff7e67]">love and care.</span>
-        </h1>
-        <div className="relative mt-8">
-          <img src={DogCatImage} alt="Happy dog and cat" className="w-full max-w-xl mx-auto" />
+        <div className="-mt-1 w-full">
+          <img
+            src={DodnCatImage}
+            alt="Happy dog and cat"
+             className="w-full h-auto"
+             />
         </div>
-      </div>
 
       {/* About Section */}
       <div className="px-6 md:px-20 py-16 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-extrabold text-[#7c5e3b] mb-6 text-left">WHO WE ARE</h2>
+        <h2 className="text-2xl font-extrabold text-[#7c5e3b] mb-6 text-left">ABOUT US</h2>
         <p className="mb-16 text-base text-justify">
           Pawfect Care is a web-based management system designed to make pet adoption easier and more accessible 
           for residents of Tacurong City. Our platform connects adopters with loving pets in need of a home 
