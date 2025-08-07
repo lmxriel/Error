@@ -15,12 +15,12 @@ export default function LandingPage() {
           <span className="text-2xl font-bold">Pawfect Care</span>
         </div>
         <div className="flex-grow flex justify-center ml-[-150px] gap-10 text-sm font-medium">
-          <button onClick={() => navigate("/about")} className="hover:text-[#ff7e67] transition-colors">About Us</button>
+          <button onClick={() => navigate("/")} className="hover:text-[#ff7e67] transition-colors font-bold underline">About Us</button>
           <button onClick={() => navigate("/adoption")} className="hover:text-[#ff7e67] transition-colors">Adoption</button>
-          <button onClick={() => navigate("/book")} className="hover:text-[#ff7e67] transition-colors">Book</button>
+          <button onClick={() => navigate("/booking")} className="hover:text-[#ff7e67] transition-colors">Book</button>
         </div>
         <div>
-          <button onClick={() => navigate("/")} className="px-4 py-1 border border-black rounded-full hover:bg-black hover:text-white transition">
+          <button onClick={() => navigate("/user/login")} className="px-4 py-1 border border-black rounded-full hover:bg-black hover:text-white transition">
             Sign in
           </button>
         </div>

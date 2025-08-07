@@ -3,29 +3,25 @@ import {
   DashboardRoute,
   LoginRoute,
   RecordRoute,
-  ChangePasswordRoute,
 } from "./Routes/AdminRoutes/AdminRoutes";
 import {
   UserLoginRoute,
   UserDashboardRoute,
   UserReportRoute,
   UserProfileRoute,
-  UserChangepasswordRoute,
   UserAdoptionRoute,
- 
+  UserRegistrationRoute,
 } from "./Routes/UserRoutes/UserRoutes";
 const routers = createBrowserRouter([
   LoginRoute,
   DashboardRoute,
   RecordRoute,
-  ChangePasswordRoute,
   UserLoginRoute,
   UserDashboardRoute,
   UserReportRoute,
   UserProfileRoute,
-  UserChangepasswordRoute,
   UserAdoptionRoute,
- 
+  UserRegistrationRoute,
 ]);
 
 function App() {

@@ -1,9 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
-// Assets
 import PawfectCareLogo from "../UserDashboard/PawfectCareLogo.svg";
-import DogBanner from "../UserDashboard/DogBanner.png";
+import AdoptionImage from "../UserDashboard/AdoptionImage.png";
 
 export default function AdoptionPage() {
   const navigate = useNavigate();
@@ -20,7 +18,7 @@ export default function AdoptionPage() {
 
         {/* Navigation */}
         <nav className="flex-grow flex justify-center ml-[-150px] gap-10 text-sm font-medium">
-          <button onClick={() => navigate("/about")} className="hover:text-[#ff7e67] transition-colors">
+          <button onClick={() => navigate("/")} className="hover:text-[#ff7e67] transition-colors">
             About Us
           </button>
           <button
@@ -29,30 +27,23 @@ export default function AdoptionPage() {
           >
             Adoption
           </button>
-          <button onClick={() => navigate("/book")} className="hover:text-[#ff7e67] transition-colors">
+          <button onClick={() => navigate("/booking")} className="hover:text-[#ff7e67] transition-colors">
             Book
           </button>
         </nav>
 
-        {/* Sign In */}
-        <div>
-          <button
-            onClick={() => navigate("/signin")}
-            className="px-4 py-1 border border-black rounded-full hover:bg-black hover:text-white transition"
-          >
-            Sign in
-          </button>
-        </div>
+    
       </header>
 
-      {/* Banner Section */}
-      <section className="relative w-full h-[300px] flex items-center justify-center bg-gradient-to-r from-[#fef4e8] to-white overflow-hidden">
-        <img src={DogBanner} alt="Dog Banner" className="absolute left-0 h-full object-contain" />
-        <div className="text-right pr-10 z-10">
-          <h1 className="text-4xl font-black text-[#5e4224]">ADOPT.</h1>
-          <p className="text-xl font-bold text-[#b88a4c]">DON’T SHOP</p>
+
+   {/* Banner Section */}
+        <div className="-mt-1 w-full">
+          <img
+            src={AdoptionImage}
+             className="w-full h-auto"
+             />
         </div>
-      </section>
+
 
       {/* Pet Type Buttons */}
       <section className="flex justify-center gap-6 py-16 bg-[#f4f1f1]">

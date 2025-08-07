@@ -1,10 +1,19 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 export default function UserLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const togglePassword = () => setShowPassword(!showPassword);
 
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+  e.preventDefault();
+    navigate("/")
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-sm space-y-6">
@@ -17,7 +26,7 @@ export default function UserLoginPage() {
         <form className="space-y-4">
           <div className="flex justify-between text-sm text-black">
             <label>Email</label>
-            <a href="/register" className="underline">Register</a>
+             <Link to="/register" className="underline">Register</Link>
           </div>
           <input
             type="email"
@@ -47,6 +56,7 @@ export default function UserLoginPage() {
           <button
             type="submit"
             className="w-full py-2 rounded-md bg-[#b18162] text-white font-semibold text-lg hover:bg-[#a06e4d]"
+            onClick={handleLogin}
           >
             Login
           </button>

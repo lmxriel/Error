@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebars/AdminSidebar";
 import Logo from "../Dashboard/Logo.png";
 import Setting from "../Dashboard/Setting.svg";
+import ChangePasswordModal from "../../Components/Modals/ChangePassword";
 
 const API_BASE_URL = "http://localhost:8081";
 
@@ -17,14 +18,48 @@ function DashboardPage() {
   const [appointments, setAppointments] = useState([]);
   const [messages, setMessages] = useState([]);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  
+  
+  const goToChangePassword = () => {
+    setShowChangePasswordModal(true);
+    setShowSettingsMenu(false);
+  };
+
+
+  const handleChangePassword = async (currentPassword, newPassword) => {
+  try {
+    const loggedInAdmin = JSON.parse(localStorage.getItem("loggedInAdmin"));
+
+    const response = await fetch(`${API_BASE_URL}/admin/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        adminId: loggedInAdmin?.id,
+        currentPassword,
+        newPassword,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert("Password changed successfully.");
+      setShowChangePasswordModal(false);
+    } else {
+      alert(result.message || "Failed to change password.");
+    }
+  } catch (error) {
+    console.error("Error changing password:", error);
+    alert("An error occurred. Please try again.");
+  }
+};
 
   const handleSignOut = () => {
     localStorage.removeItem("loggedInAdmin");
     navigate("/admin/login");
-  };
-
-  const goToChangePassword = () => {
-    navigate("/admin/change-password");
   };
 
   useEffect(() => {
@@ -266,6 +301,14 @@ function DashboardPage() {
             </table>
           </div>
         )}
+        {showChangePasswordModal && (
+        <ChangePasswordModal
+          isOpen={showChangePasswordModal}
+          onClose={() => setShowChangePasswordModal(false)}
+          onChangePassword={handleChangePassword}
+        />
+      )}
+
       </div>
     </div>
   );
