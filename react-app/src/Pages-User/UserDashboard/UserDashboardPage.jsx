@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import DodnCatImage from "../UserDashboard/DodnCatImage.png"; 
-import PawfectCareLogo from "../UserDashboard/PawfectCareLogo.svg";
+import DogAndCat from "../../assets/DogAndCatImage.png"; 
+import PawfectCareLogo from "../../assets/PawfectCareLogo.svg";
 
-export default function LandingPage() {
+function UserDashboardPage() {
   const navigate = useNavigate();
 
   return (
@@ -29,14 +29,14 @@ export default function LandingPage() {
       {/* Hero Section */}
         <div className="-mt-1 w-full">
           <img
-            src={DodnCatImage}
+            src={DogAndCat}
             alt="Happy dog and cat"
              className="w-full h-auto"
              />
         </div>
 
       {/* About Section */}
-      <div className="px-6 md:px-20 py-16 max-w-6xl mx-auto">
+      <div className="px-6 bg-white md:px-20 py-16 max-w-6xl mx-auto">
         <h2 className="text-2xl font-extrabold text-[#7c5e3b] mb-6 text-left">ABOUT US</h2>
         <p className="mb-16 text-base text-justify">
           Pawfect Care is a web-based management system designed to make pet adoption easier and more accessible 
@@ -117,3 +117,4 @@ export default function LandingPage() {
     </div>
   );
 }
+export default UserDashboardPage;

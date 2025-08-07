@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import Logo from "./OVS_logo.png";
+import OVSLogo from "../../assets/OVSLogo.png";
 
 const API_BASE_URL = "http://localhost:8081";
-
-
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -46,7 +44,7 @@ function Login() {
     <div className="min-h-screen flex">
       {/* Left Side - Logo */}
       <div className="w-1/2 flex items-center justify-center bg-white">
-        <img src={Logo} alt="OVS Logo" className="w-80 h-80" />
+        <img src={OVSLogo} alt="OVS Logo" className="w-80 h-80" />
       </div>
 
       {/* Right Side - Login Form */}

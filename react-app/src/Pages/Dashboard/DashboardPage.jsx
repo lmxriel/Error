@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../Components/Sidebars/AdminSidebar";
-import Logo from "../Dashboard/Logo.png";
-import Setting from "../Dashboard/Setting.svg";
+import OVSLogo from "../../assets/OVSLogo.png";
+import SettingsLogo from "../../assets/SettingsLogo.svg";
 import ChangePasswordModal from "../../Components/Modals/ChangePassword";
 
 const API_BASE_URL = "http://localhost:8081";
@@ -115,18 +114,17 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar />
       <div className="flex-grow p-6 bg-gray-100">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <img className="w-10 h-10 rounded-full mr-3" src={Logo} alt="Logo" />
+            <img className="w-10 h-10 rounded-full mr-3" src={OVSLogo} alt="Logo" />
             <h1 className="text-xl font-semibold text-gray-800">
               Tacurong City Veterinary Services Office
             </h1>
           </div>
           <div className="flex items-center space-x-4">
             <img
-              src={Setting}
+              src={SettingsLogo}
               alt="Setting"
               onClick={() => setShowSettingsMenu(!showSettingsMenu)}
               className="w-10 h-10 p-2 bg-white border border-gray-300 rounded-full"

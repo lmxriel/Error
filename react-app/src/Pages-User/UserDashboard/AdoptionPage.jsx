@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import PawfectCareLogo from "../UserDashboard/PawfectCareLogo.svg";
-import AdoptionImage from "../UserDashboard/AdoptionImage.png";
+import PawfectCareLogo from "../../assets/PawfectCareLogo.svg";
+import AdoptionImage from "../../assets/AdoptionImage.png";
 
-export default function AdoptionPage() {
+function AdoptionPage() {
   const navigate = useNavigate();
 
   return (
@@ -45,21 +45,7 @@ export default function AdoptionPage() {
         </div>
 
 
-      {/* Pet Type Buttons */}
-      <section className="flex justify-center gap-6 py-16 bg-[#f4f1f1]">
-        <button
-          onClick={() => navigate("/adoption/dogs")}
-          className="bg-white px-10 py-4 rounded-xl shadow-md text-xl font-semibold hover:bg-gray-100 transition"
-        >
-          DOG
-        </button>
-        <button
-          onClick={() => navigate("/adoption/cats")}
-          className="bg-white px-10 py-4 rounded-xl shadow-md text-xl font-semibold hover:bg-gray-100 transition"
-        >
-          CAT
-        </button>
-      </section>
     </div>
   );
 }
+export default AdoptionPage

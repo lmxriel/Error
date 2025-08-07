@@ -1,9 +1,8 @@
 import UserLoginPage from "../../Pages-User/UserLogin/UserLogin";
 import UserDashboardPage from "../../Pages-User/UserDashboard/UserDashboardPage";
-import UserReportPage from "../../Pages-User/UserReports/UserReportPages";
-import UserProfilePage from "../../Pages-User/UserProfile/UserProfilePage";
 import AdoptionPage from "../../Pages-User/UserDashboard/AdoptionPage";
 import UserRegistrationPage from "../../Pages-User/UserLogin/UserRegistration";
+import BookingPage from "../../Pages-User/UserDashboard/BookingPage";
 
 const UserDashboardRoute = {
   path: "/",
@@ -21,22 +20,15 @@ const UserAdoptionRoute = {
   path: "/adoption",
   element: <AdoptionPage/>,
 }
-const UserProfileRoute = {
-  path: "/user/profile",
-  element: <UserProfilePage />,
-};
 
-const UserReportRoute = {
-  path: "/user/report",
-  element: <UserReportPage />,
-};
-
-
+const UserBookingRoute = {
+  path: "/booking",
+  element: <BookingPage />,
+}
 export {
   UserLoginRoute,
   UserDashboardRoute,
-  UserReportRoute,
-  UserProfileRoute,
   UserAdoptionRoute,
   UserRegistrationRoute,
+  UserBookingRoute,
 }

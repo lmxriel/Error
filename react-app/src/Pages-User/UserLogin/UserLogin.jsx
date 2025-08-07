@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 
-export default function UserLoginPage() {
+function UserLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const togglePassword = () => setShowPassword(!showPassword);
 
@@ -65,3 +65,4 @@ export default function UserLoginPage() {
     </div>
   );
 }
+export default UserLoginPage;
