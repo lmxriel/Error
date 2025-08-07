@@ -12,7 +12,7 @@ function ChangepasswordPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Sidebar toggle state
   const [oldpassword, setOldpassword] = useState("");
   const [newpassword, setNewpassword] = useState("");
-  const [confirmpassword, setConfirmpassword] = useState("");
+  const [confirmpassword, setConfirmpassword] = useState("  ");
   const [passwordVisible, setPasswordVisible] = useState({
     old: false,
     new: false,
@@ -66,7 +66,7 @@ function ChangepasswordPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:8081/user_accounts/change_password/${loggedInUser.user_id}`,
+        `http://localhost:8081/user_acconts/change_password/${loggedInUser.user_id}`,
         {
           method: "PUT",
           headers: {
