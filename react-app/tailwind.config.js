@@ -8,6 +8,10 @@ export default {
         "login-frame-bg": "#E7F0DC",
         "sidebar-bg": "#597445",
         "dashboard-bg": "#eef0ea",
+        "gray-orange": '#a16f4a',
+      },
+       colors: {
+        'gray-orange': '#a16f4a',
       },
       width: {
         "360px": "360px",
@@ -29,6 +33,20 @@ export default {
       margin: {
         "105px": "105px",
         "50px": "50px",
+      },
+      keyframes: {
+        scaleUp: {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+      },
+      checkmark: {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '50%': { transform: 'scale(1.2)', opacity: '1' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+       animation: {
+        scaleUp: 'scaleUp 0.3s ease-out forwards',
       },
     },
   },

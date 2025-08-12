@@ -36,7 +36,7 @@ function UserDashboardPage() {
         </div>
 
       {/* About Section */}
-      <div className="px-6 bg-white md:px-20 py-16 max-w-6xl mx-auto">
+      <div className="px-6 bg-white md:px-20 py-16">
         <h2 className="text-2xl font-extrabold text-[#7c5e3b] mb-6 text-left">ABOUT US</h2>
         <p className="mb-16 text-base text-justify">
           Pawfect Care is a web-based management system designed to make pet adoption easier and more accessible 

@@ -12,8 +12,8 @@ function DashboardPage() {
   const [pendingAdoptions, setPendingAdoptions] = useState(0);
   const [scheduledAppointments, setScheduledAppointments] = useState(0);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [pets, setPets] = useState([]);
-  const [adoptionRequests, setAdoptionRequests] = useState([]);
+  const [pets, setPets] = useState(["pets"]);
+  const [adoptionRequests, setAdoptionRequests] = useState(["adoption"]);
   const [appointments, setAppointments] = useState([]);
   const [messages, setMessages] = useState([]);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -154,7 +154,13 @@ function DashboardPage() {
             {["dashboard", "pets", "adoptions", "appointments", "messages"].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                 onClick={() => {
+                  if (tab === "pets") {
+                    navigate("/pets");
+                  } else {
+                    setActiveTab(tab);
+                  }
+                }}
                 className={`px-4 py-2 rounded-md focus:outline-none ${
                   activeTab === tab ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100"
                 }`}
@@ -179,108 +185,6 @@ function DashboardPage() {
               <h2 className="text-lg font-semibold text-gray-700 mb-2">Appointment Management</h2>
               <div className="text-3xl font-bold text-gray-800">{scheduledAppointments}</div>
             </div>
-          </div>
-        )}
-
-        {activeTab === "pets" && (
-          <div className="bg-white p-6 rounded-md shadow">
-            <h2 className="text-lg font-semibold mb-4">Pet List</h2>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="py-2">Image</th>
-                  <th className="py-2">Name</th>
-                  <th className="py-2">Breed</th>
-                  <th className="py-2">Size</th>
-                  <th className="py-2">Gender</th>
-                  <th className="py-2">Color</th>
-                  <th className="py-2">Weight</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pets.map((pet, index) => (
-                  <tr key={index} className="border-t border-gray-100 hover:bg-gray-50">
-                    <td className="py-2">
-                      <img src={pet.imageUrl} alt={pet.name} className="w-12 h-12 rounded object-cover" />
-                    </td>
-                    <td className="py-2">{pet.name}</td>
-                    <td className="py-2">{pet.breed}</td>
-                    <td className="py-2">{pet.size}</td>
-                    <td className="py-2">{pet.gender}</td>
-                    <td className="py-2">{pet.color}</td>
-                    <td className="py-2">{pet.weight}</td>
-                    <td className="py-2 font-semibold">
-                      {pet.status === "Approved" && <span className="text-green-600">Approved</span>}
-                      {pet.status === "Pending" && <span className="text-yellow-600">Pending</span>}
-                      {pet.status === "Available" && <span className="text-blue-600">Available</span>}
-                    </td>
-                    <td className="py-2">
-                      <button className="text-blue-500 hover:underline mr-2">Edit</button>
-                      <button className="text-red-500 hover:underline">Delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {activeTab === "adoptions" && (
-          <div className="bg-white p-6 rounded-md shadow">
-            <h2 className="text-lg font-semibold mb-4">Pending Adoption Requests</h2>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="py-2">Name</th>
-                  <th className="py-2">Date</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {adoptionRequests.map((req, index) => (
-                  <tr key={index} className="border-t hover:bg-gray-50">
-                    <td className="py-2">{req.adopterName}</td>
-                    <td className="py-2">{req.dateRequested}</td>
-                    <td className="py-2">{req.status}</td>
-                    <td className="py-2">
-                      <button className="text-green-600 hover:underline mr-2">Approve</button>
-                      <button className="text-red-600 hover:underline">Reject</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {activeTab === "appointments" && (
-          <div className="bg-white p-6 rounded-md shadow">
-            <h2 className="text-lg font-semibold mb-4">Scheduled Appointments</h2>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="py-2">Name</th>
-                  <th className="py-2">Date</th>
-                  <th className="py-2">Time</th>
-                  <th className="py-2">Service</th>
-                  <th className="py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {appointments.map((appt, index) => (
-                  <tr key={index} className="border-t hover:bg-gray-50">
-                    <td className="py-2">{appt.ownerName}</td>
-                    <td className="py-2">{appt.date}</td>
-                    <td className="py-2">{appt.time}</td>
-                    <td className="py-2">{appt.service}</td>
-                    <td className="py-2">{appt.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         )}
 
