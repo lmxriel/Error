@@ -3,7 +3,9 @@ import OVSLogo from "../../assets/OVSLogo.png";
 import Delete from "../../assets/Delete.svg";
 import Edit from "../../assets/Edit.svg";
 import { useNavigate } from "react-router-dom";
-
+/* What to do? fix the add pets which is the create in the database and also in the frontend there is more problem 
+  in the frontend than backend immediate fix add setEditng or add another which is setAddingPet instead
+  this will finish the crud for the pets in the admin side next will be the adoption phase😒😒😒 */
 function PetPage() {
   const navigate = useNavigate();
   const [pets, setPets] = useState([]);
@@ -19,39 +21,116 @@ function PetPage() {
     breed: "",
     size: "",
     gender: "",
-    color: "",
     weight: "",
+    medical: "",
+    color: "",
     status: "Available",
-    imageUrl: "",
+    image: "",       // ✅ URL string for preview
+    imageFile: null, // ✅ actual file for upload
   });
 
-  // Dummy data for only
   useEffect(() => {
-    setPets([
-      {
-        id: 1,
-        name: "Buddy",
-        breed: "Golden Retriever",
-        size: "Large",
-        gender: "Male",
-        color: "Golden",
-        weight: "30kg",
-        medical: "Vaccined",
-        status: "Available",
-        imageUrl:
-          "https://images.unsplash.com/photo-1507149833265-60c372daea22?w=500",
-      },
-    ]);
+    fetch("http://localhost:8081/api/pets")
+      .then((res) => res.json())
+      .then((data) => setPets(data))
+      .catch((err) => console.error("Error fetching pets:", err));
   }, []);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const fetchPets = () => {
+  fetch("http://localhost:8081/api/pets")
+    .then((res) => res.json())
+    .then((data) => setPets(data))
+    .catch((err) => console.error("Error fetching pets:", err));
   };
 
-  const openForm = (pet = null) => {
+  useEffect(() => {
+    fetchPets();
+  }, []);
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("name", formData.name || "");
+    formDataToSend.append("breed", formData.breed || "");
+    formDataToSend.append("size", formData.size || "");
+    formDataToSend.append("gender", formData.gender || "");
+    formDataToSend.append("weight", formData.weight || "");
+    formDataToSend.append("color", formData.color || "");
+    formDataToSend.append("status", formData.status || "");
+    formDataToSend.append("medical", formData.medical || "");
+
+    if (formData.imageFile) {
+      formDataToSend.append("image", formData.imageFile);
+    }
+
+    let url = "http://localhost:8081/api/pets";
+    let method = "POST";
+
+    if (editingPet) {
+      url = `http://localhost:8081/update/pets/${editingPet.pet_id}`;
+      method = "PUT";
+    }
+
+    await fetch(url, {
+      method,
+      body: formDataToSend
+    });
+
+    // ✅ Refresh data from backend
+    fetchPets();
+
+    closeForm();
+  };
+
+  const confirmDelete = async () => {
+    if (petToDelete) {
+      await fetch(`http://localhost:8081/delete/pets/${petToDelete.pet_id}`, {
+        method: "DELETE",
+      });
+      setPets((prev) => prev.filter((pet) => pet.pet_id !== petToDelete.pet_id));
+      setShowDeleteModal(false);
+      setPetToDelete(null);
+    }
+  };
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+    const handleImageChange = (e) => {
+  const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        imageFile: file
+      }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          image: reader.result // For preview only
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  //Open form
+   const openForm = (pet = null) => {
     if (pet) {
       setEditingPet(pet);
-      setFormData(pet);
+      setFormData({
+        name: pet.name || "",
+        breed: pet.breed || "",
+        size: pet.size || "",
+        gender: pet.gender || "",
+        weight: pet.weight || "",
+        medical: pet.medical || "",
+        color: pet.color || "",
+        status: pet.status || "Available",
+        image: pet.image || "",
+        imageFile: null,
+      });
     } else {
       setEditingPet(null);
       setFormData({
@@ -59,32 +138,18 @@ function PetPage() {
         breed: "",
         size: "",
         gender: "",
-        color: "",
         weight: "",
+        medical: "",
+        color: "",
         status: "Available",
-        imageUrl: "",
+        image: "",
+        imageFile: null,
       });
     }
     setShowForm(true);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (editingPet) {
-      // Update existing pet
-      setPets((prevPets) =>
-        prevPets.map((pet) =>
-          pet.id === editingPet.id ? { ...formData, id: editingPet.id } : pet
-        )
-      );
-    } else {
-      // Add new pet with new unique id
-      const newId = pets.length ? Math.max(...pets.map((p) => p.id)) + 1 : 1;
-      setPets((prevPets) => [...prevPets, { ...formData, id: newId }]);
-    }
-
-    // Reset form and close modal
+  const closeForm = () => {
     setShowForm(false);
     setEditingPet(null);
     setFormData({
@@ -92,31 +157,24 @@ function PetPage() {
       breed: "",
       size: "",
       gender: "",
-      color: "",
       weight: "",
       medical: "",
+      color: "",
       status: "Available",
-      imageUrl: "",
+      image: "",
+      imageFile: null,
     });
   };
-
-  // Open delete modal
-  const openDeleteModal = (pet) => {
-    setPetToDelete(pet);
-    setShowDeleteModal(true);
-  };
-
-  // Confirm delete handler
-  const confirmDelete = () => {
-    if (petToDelete) {
-      setPets((prevPets) => prevPets.filter((pet) => pet.id !== petToDelete.id));
-      setShowDeleteModal(false);
-      setPetToDelete(null);
-    }
+  // Open delete handler
+  const openDeleteModal = (pet) => 
+  {
+  setPetToDelete(pet);
+  setShowDeleteModal(true);
   };
 
   // Cancel delete handler
-  const cancelDelete = () => {
+  const cancelDelete = () => 
+  {
     setShowDeleteModal(false);
     setPetToDelete(null);
   };
@@ -186,38 +244,38 @@ function PetPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-200 text-sm text-gray-600">
-                <th className="py-3 text-center">Image</th>
-                <th className="py-3 text-center">Name</th>
-                <th className="py-3 text-center">Breed</th>
-                <th className="py-3 text-center">Size</th>
-                <th className="py-3 text-center">Gender</th>
-                <th className="py-3 text center">Color</th>
-                <th className="py-3 text-center">Weight</th>
-                <th className="py-3 text-center">Medical</th>
-                <th className="py-3 text-center">Status</th>
-                <th className="py-3 text-center">Actions</th>
+                <th className="py-3">Image</th>
+                <th className="py-3">Name</th>
+                <th className="py-3">Breed</th>
+                <th className="py-3">Size</th>
+                <th className="py-3">Gender</th>
+                <th className="py-3">Color</th>
+                <th className="py-3">Weight</th>
+                <th className="py-3">Medical</th>
+                <th className="py-3">Status</th>
+                <th className="py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {pets.map((pet) => (
                 <tr
-                  key={pet.id}
+                  key={pet.pet_id} // ✅ unique and stable
                   className="border-t border-gray-100 hover:bg-gray-50 transition"
                 >
                   <td className="py-2">
                     <img
-                      src={pet.imageUrl}
-                      alt={pet.name}
+                      src={pet.imageUrl} // already base64 string
                       className="w-12 h-12 rounded object-cover"
+                      alt={pet.name}
                     />
                   </td>
-                  <td className="py-2 text-center">{pet.name}</td>
-                  <td className="py-2 text-center">{pet.breed}</td>
-                  <td className="py-2 text-center">{pet.size}</td>
-                  <td className="py-2 text-center">{pet.gender}</td>
-                  <td className="py-2 text-center">{pet.color}</td>
-                  <td className="py-2 text-center">{pet.weight}</td>
-                  <td className="py-2 text-center">{pet.medical}</td>
+                  <td className="py-2">{pet.name}</td>
+                  <td className="py-2">{pet.breed}</td>
+                  <td className="py-2">{pet.size}</td>
+                  <td className="py-2">{pet.gender}</td>
+                  <td className="py-2">{pet.color}</td>
+                  <td className="py-2">{pet.weight}</td>
+                  <td className="py-2">{pet.medical}</td>
                   <td className="py-2 font-semibold">
                     {pet.status === "Approved" && (
                       <span className="text-green-600">Approved</span>
@@ -316,36 +374,27 @@ function PetPage() {
                 />
                 <input
                   type="text"
-                  name="medical status"
+                  name="medical" // ✅ matches formData.medical
                   placeholder="Medical Status"
                   value={formData.medical}
-                  onChange={handleChange}
+                  onChange={handleChange} // ✅ will now update the correct state property
                   className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
                 <div>
                   <label className="block mb-1 font-medium">Upload Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setFormData((prev) => ({ ...prev, imageUrl: reader.result }));
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                  {formData.imageUrl && (
-                    <img
-                      src={formData.imageUrl}
-                      alt="Preview"
-                      className="mt-2 w-24 h-24 object-cover rounded"
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
-                  )}
+                    {formData.image && (
+                      <img
+                        src={formData.image}
+                        alt="Preview"
+                        className="mt-2 w-24 h-24 object-cover rounded"
+                      />
+                    )}
                 </div>
 
                 <select
@@ -398,7 +447,7 @@ function PetPage() {
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="bg-[#560705] text-white px-4 py-2 rounded hover: bg-black"
+                  className="bg-[#703736] text-white px-4 py-2 rounded hover:bg-slate-500"
                 >
                   Delete
                 </button>

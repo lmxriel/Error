@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const cors = require("cors");
-const moment = require("moment");
+const multer = require("multer");
 
 const app = express();
 app.use(cors());
@@ -24,7 +24,7 @@ function handleDisconnect() {
     host: "localhost",
     user: "root",
     password: "dayon1999", // Make sure to secure this in production
-    database: "fams_db",
+    database: "pet_adoption",
     port: 3306,
   });
 
@@ -46,341 +46,196 @@ function handleDisconnect() {
     }
   });
 }
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images allowed"));
+    }
+  },
+});
 
 handleDisconnect();
 
-// Fetch a specific faculty's first and last name by user ID
-app.get("/user/:user_id", (req, res) => {
-  const { user_id } = req.params;
-  const sql = "SELECT first_name, last_name FROM faculty WHERE user_id = ?";
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use('/uploads', express.static('uploads'));
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
 
-  db.query(sql, [user_id], (err, data) => {
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  const sql = "SELECT * FROM administrator WHERE email = ? AND password = ?"; 
+  // NOTE: In production, never store plain passwords — use bcrypt hashing
+
+  db.query(sql, [email, password], (err, results) => {
     if (err) {
-      console.error("Error fetching user details:", err);
-      return res.status(500).json({ error: "Error fetching user details" });
-    }
-    if (data.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    return res.status(200).json(data[0]);
-  });
-});
-
-app.get("/user/info/:user_id", (req, res) => {
-  const { user_id } = req.params;
-  const sql = "SELECT * FROM faculty WHERE user_id = ?";
-
-  db.query(sql, [user_id], (err, data) => {
-    if (err) {
-      console.error("Error fetching user details:", err);
-      return res.status(500).json({ error: "Error fetching user details" });
-    }
-    if (data.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    return res.status(200).json(data[0]);
-  });
-});
-
-app.post("/admin_login", (req, res) => {
-  const { username, password } = req.body;
-
-  const sql =
-    "SELECT user_id, username, role, dept_name FROM faculty WHERE username = ? AND password = ?";
-
-  db.query(sql, [username, password], (err, data) => {
-    if (err) {
-      console.error("Database query failed:", err);
-      return res.status(500).json({ error: "Database query failed" });
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Server error" });
     }
 
-    if (data.length > 0) {
-      const user = data[0]; // Get the first user (assuming unique usernames)
-      return res.status(200).json({
-        message: "Login successful",
-        user_id: user.user_id,
-        username: user.username,
-        role: user.role,
-        dept_name: user.dept_name, // Now includes department name
-      });
+    if (results.length > 0) {
+      res.json({ success: true, user: results[0] });
     } else {
-      return res.status(401).json({ message: "Invalid username or password" });
+      res.status(401).json({ success: false, message: "Invalid email or password" });
     }
   });
 });
 
-app.get("/admin_login/:user_id", (req, res) => {
-  const { user_id } = req.params;
-  const sql = "SELECT role FROM faculty WHERE user_id = ?";
-
-  db.query(sql, [user_id], (err, data) => {
-    if (err) {
-      console.error("Error fetching user details:", err);
-      return res.status(500).json({ error: "Error fetching user details" });
-    }
-    if (data.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.setHeader("Content-Type", "application/json"); // Explicitly set Content-Type
-    return res.status(200).json({ role: data[0].role });
-  });
-});
-// Fetch all facultys from 'faculty' table
-app.get("/user_accounts", (req, res) => {
-  const sql = "SELECT * FROM faculty WHERE role ='user'";
-  db.query(sql, (err, data) => {
-    if (err) {
-      console.error("Error querying user_accounts table:", err);
-      return res.json(err);
-    }
-
-    // Convert all string values to lowercase
-    const formattedData = data.map((row) => {
-      return Object.fromEntries(
-        Object.entries(row).map(([key, value]) => [
-          key,
-          typeof value === "string" ? value.toLowerCase() : value,
-        ])
-      );
-    });
-
-    return res.json(formattedData);
-  });
-});
-
-// Update user password
-app.put("/user_accounts/change_password/:user_id", (req, res) => {
-  const { user_id } = req.params;
-  const { oldpassword, newpassword } = req.body;
-
-  const checkpasswordSql = "SELECT password FROM faculty WHERE user_id = ?";
-
-  db.query(checkpasswordSql, [user_id], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Error checking old password" });
-    }
-
-    if (results.length === 0) {
-      console.log("No user found"); // Debugging
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const currentpassword = results[0].password;
-
-    if (currentpassword !== oldpassword) {
-      return res.status(400).json({ error: "Old password is incorrect" });
-    }
-
-    const updatepasswordSql =
-      "UPDATE faculty SET password = ? WHERE user_id = ?";
-    db.query(updatepasswordSql, [newpassword, user_id], (err, result) => {
-      if (err) {
-        return res.status(500).json({ error: "Error updating password" });
-      }
-      return res.status(200).json({ message: "password updated successfully" });
-    });
-  });
-});
-
-app.get("/subject_api", (req, res) => {
-  // const sql = `
-  //   SELECT
-  //     faculty_subject.subject_id,
-  //     faculty_subject.subject_code,
-  //     faculty_subject.subject_description,
-  //     faculty_subject.subject_timeIn,
-  //     faculty_subject.subject_timeOut,
-  //     faculty.user_id,
-  //     faculty.first_name,
-  //     faculty.middle_name,
-  //     faculty.last_name
-  //   FROM
-  //     faculty
-  //   LEFT JOIN
-  //     faculty_subject ON faculty.user_id = faculty_subject.user_id
-  //   WHERE
-  //     faculty.username != 'admin'
-  // `;
+// ===================== DASHBOARD COUNTS =====================
+app.get("/users/count", (req, res) => {
   const sql = `
-  SELECT 
-    fs.subject_id,
-    fm.subject_code, 
-    fm.subject_description, 
-    fs.subject_timeIn, 
-    fs.subject_timeOut, 
-    f.user_id,
-    f.first_name,
-    f.middle_name,
-    f.last_name
-  FROM 
-    faculty f
-  LEFT JOIN 
-    faculty_subject fs ON f.user_id = fs.user_id
-  LEFT JOIN 
-    faculty_module fm ON fs.module_id = fm.module_id
-  WHERE 
-    f.username != 'admin';
-`;
-
+    SELECT 
+      (SELECT COUNT(*) FROM pet_owner) + (SELECT COUNT(*) FROM pet_adopter) AS count
+  `;
   db.query(sql, (err, results) => {
-    if (err) {
-      console.error("Error fetching subjects:", err);
-      return res.status(500).json({ error: "Failed to fetch subjects" });
-    }
+    if (err) return res.status(500).json({ message: "Error fetching users" });
+    res.json({ count: results[0].count });
+  });
+});
 
+app.get("/adoptions/pending/count", (req, res) => {
+  // assuming "pending" means NOT adopted yet, so adjust if you have a status column
+  const sql = `SELECT COUNT(*) AS count FROM adoption`;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ message: "Error fetching adoptions" });
+    res.json({ count: results[0].count });
+  });
+});
+
+app.get("/appointments/scheduled/count", (req, res) => {
+  const sql = `SELECT COUNT(*) AS count FROM appointment`;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ message: "Error fetching appointments" });
+    res.json({ count: results[0].count });
+  });
+});
+
+// ===================== FULL LISTS =====================
+app.get("/pets", (req, res) => {
+  db.query("SELECT * FROM pet", (err, results) => {
+    if (err) return res.status(500).json({ message: "Error fetching pets" });
     res.json(results);
   });
 });
 
-app.put("/user_accounts_reset_password/:user_id", (req, res) => {
-  const { user_id } = req.params;
-  const defaultPassword = "1234"; // Default password
-
-  const sql = "UPDATE faculty SET password = ? WHERE user_id = ?";
-
-  db.query(sql, [defaultPassword, user_id], (err, result) => {
-    if (err) {
-      console.error("Error resetting user password:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to reset password", details: err });
-    }
-    return res
-      .status(200)
-      .json({ message: "Password reset successfully", result });
+app.get("/adoptions/pending", (req, res) => {
+  const sql = `
+    SELECT a.*, p.breed, pa.first_name AS adopter_first, pa.last_name AS adopter_last
+    FROM adoption a
+    JOIN pet p ON a.pet_id = p.pet_id
+    JOIN pet_adopter pa ON a.petAdopter_id = pa.petAdopter_id
+  `;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ message: "Error fetching adoptions" });
+    res.json(results);
   });
 });
 
-app.get("/api/faculty", (req, res) => {
-  const { dept_name } = req.query; // Get department name from query params
-
-  let sql = `SELECT user_id, first_name, middle_name, last_name, username, dept_name FROM faculty WHERE role != 'admin'`;
-  let params = [];
-
-  if (dept_name && dept_name !== "ALL DEPT") {
-    sql += ` AND dept_name = ?`;
-    params.push(dept_name);
-  }
-
-  db.query(sql, params, (err, results) => {
-    if (err) {
-      console.error("Error fetching faculty records:", err);
-      return res.status(500).json({ error: "Error fetching faculty records" });
-    }
-    res.status(200).json(results);
+app.get("/appointments", (req, res) => {
+  const sql = `
+    SELECT ap.*, po.first_name AS owner_first, po.last_name AS owner_last
+    FROM appointment ap
+    JOIN pet_owner po ON ap.petOwner_id = po.petOwner_id
+  `;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ message: "Error fetching appointments" });
+    res.json(results);
   });
 });
 
-app.get("/faculty/subjects/:user_id", (req, res) => {
-  const { user_id } = req.params;
-  const { filter } = req.query; // Get filter type (daily/monthly)
-  let sql = `
-    SELECT 
-      fs.subject_id,
-      fm.subject_code, 
-      fm.subject_description, 
-      fs.subject_timeIn, 
-      fs.subject_timeOut,
-      f.user_id,
-      f.first_name,
-      f.middle_name,
-      f.last_name,
-      f.dept_name,  -- Ensure dept_name exists in faculty table
-      al.time_in,
-      al.time_out,
-      al.time_start_remarks,
-      al.time_end_remarks
-    FROM 
-      faculty_subject fs
-    JOIN 
-      faculty f ON fs.user_id = f.user_id
-    JOIN 
-      faculty_module fm ON fs.module_id = fm.module_id
-    JOIN 
-      attendance_log al ON fs.subject_id = al.subject_id
-    WHERE 
-      f.user_id = ?;
+app.get("/messages", (req, res) => {
+  // Placeholder until messages table exists
+  res.json([
+    { id: 1, sender: "System", content: "Welcome to the dashboard!" }
+  ]);
+});
+
+// ==================== PET CRUD============================
+// Get all pets (convert LONGBLOB to Base64 for frontend display)
+app.get("/api/pets", (req, res) => {
+  db.query("SELECT * FROM pet", (err, rows) => {
+    if (err) return res.status(500).json({ error: err });
+
+    const pets = rows.map((pet) => ({
+      ...pet,
+      imageUrl: pet.image
+        ? `data:image/jpeg;base64,${pet.image.toString("base64")}`
+        : null,
+    }));
+
+    res.json(pets);
+  });
+});
+
+// Add pet
+app.post("/api/pets", (req, res) => {
+  const { name,breed, size, gender, weight, medical, color, status, image } = req.body;
+
+  const imageBuffer = imageUrl ? Buffer.from(image, "base64") : null;
+
+  db.query(
+    "INSERT INTO pet (name, breed, size, gender, weight, medical, color, status, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    [name, breed, size, gender, weight, medical, color, status, imageBuffer],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err });
+      res.json({ message: "Pet added successfully", id: result.insertId });
+    }
+  );
+});
+
+app.put("/update/pets/:id", upload.single("image"), (req, res) => {
+  const { id } = req.params;
+  const { breed, size, gender, weight, color, status } = req.body;
+  const imageBuffer = req.file ? req.file.buffer : null;
+
+  const sql = `
+    UPDATE pet 
+    SET breed=?, size=?, gender=?, weight=?, color=?, status=?
+    ${imageBuffer ? ", image=?" : ""}
+    WHERE pet_id=?
   `;
 
-  let params = [user_id];
+  const params = imageBuffer
+    ? [breed, size, gender, weight, color, status, imageBuffer, id]
+    : [breed, size, gender, weight, color, status, id];
 
-  if (filter === "daily") {
-    sql += ` AND DATE(al.time_in) = CURDATE()`;
-  } else if (filter === "monthly") {
-    sql += ` AND MONTH(al.time_in) = MONTH(CURDATE()) AND YEAR(al.time_in) = YEAR(CURDATE())`;
-  }
-
-  db.query(sql, params, (err, results) => {
+  db.query(sql, params, (err) => {
     if (err) {
-      console.error("Error fetching faculty subject details:", err);
-      return res
-        .status(500)
-        .json({ error: "Error fetching faculty subject details" });
+      console.error("Error updating pet:", err);
+      return res.status(500).json({ error: "Database update failed" });
     }
-
-    if (results.length === 0) {
-      return res.status(404).json({ error: "No attendance records found" });
-    }
-
-    return res.status(200).json(results);
+    res.json({ message: "Pet updated successfully" });
   });
 });
 
-app.get("/teacher/attendance/:user_id", (req, res) => {
-  const { user_id } = req.params;
-  const { filter } = req.query; // Get filter type (daily/monthly)
+app.delete("/delete/pets/:id", (req, res) => {
+  const { id } = req.params;
 
-  let sql = `
-  SELECT 
-    fm.subject_code, 
-    fm.subject_description, 
-    fs.subject_timeIn, 
-    fs.subject_timeOut,
-    f.user_id,
-    f.first_name,
-    f.middle_name,
-    f.last_name,
-    al.time_in,
-    al.time_out,
-    al.time_start_remarks,
-    al.time_end_remarks
-  FROM 
-    faculty_subject fs
-  JOIN 
-    faculty f ON fs.user_id = f.user_id
-  JOIN 
-    faculty_module fm ON fs.module_id = fm.module_id
-  JOIN 
-    attendance_log al ON fs.subject_id = al.subject_id
-  WHERE 
-    f.user_id = ?
-`;
-
-  let params = [user_id];
-
-  if (filter === "daily") {
-    sql += ` AND DATE(al.time_in) = CURDATE()`;
-  } else if (filter === "monthly") {
-    sql += ` AND MONTH(al.time_in) = MONTH(CURDATE()) AND YEAR(al.time_in) = YEAR(CURDATE())`;
-  }
-
-  db.query(sql, params, (err, results) => {
+  // Delete adoptions first
+  db.query("DELETE FROM adoption WHERE pet_id = ?", [id], (err) => {
     if (err) {
-      console.error("Error fetching faculty subject details:", err);
-      return res
-        .status(500)
-        .json({ error: "Error fetching faculty subject details" });
+      console.error("MySQL Delete Adoption Error:", err.sqlMessage || err);
+      return res.status(500).json({ error: err.sqlMessage || "Database error" });
     }
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: "No attendance records found" });
-    }
-
-    return res.status(200).json(results);
+    // Then delete pet
+    db.query("DELETE FROM pet WHERE pet_id = ?", [id], (err, result) => {
+      if (err) {
+        console.error("MySQL Delete Pet Error:", err.sqlMessage || err);
+        return res.status(500).json({ error: err.sqlMessage || "Database error" });
+      }
+      res.json({ message: "Pet deleted successfully" });
+    });
   });
 });
 
-// Start the server on port 8081
 app.listen(8081, "0.0.0.0", () => {
   console.log("Server is listening on port 8081");
 });
