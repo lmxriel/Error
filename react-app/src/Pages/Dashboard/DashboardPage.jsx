@@ -12,62 +12,31 @@ function DashboardPage() {
   const [pendingAdoptions, setPendingAdoptions] = useState(0);
   const [scheduledAppointments, setScheduledAppointments] = useState(0);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [pets, setPets] = useState(["pets"]);
-  const [adoptionRequests, setAdoptionRequests] = useState(["adoption"]);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+
+  const [pets, setPets] = useState([]);
+  const [adoptionRequests, setAdoptionRequests] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   
   
-  const goToChangePassword = () => {
-    setShowChangePasswordModal(true);
-    setShowSettingsMenu(false);
-  };
-
-
-  const handleChangePassword = async (currentPassword, newPassword) => {
-  try {
-    const loggedInAdmin = JSON.parse(localStorage.getItem("loggedInAdmin"));
-
-    const response = await fetch(`${API_BASE_URL}/admin/change-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        adminId: loggedInAdmin?.id,
-        currentPassword,
-        newPassword,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      alert("Password changed successfully.");
-      setShowChangePasswordModal(false);
-    } else {
-      alert(result.message || "Failed to change password.");
-    }
-  } catch (error) {
-    console.error("Error changing password:", error);
-    alert("An error occurred. Please try again.");
-  }
-};
+  // useEffect(() => {
+  //   const loggedInAdmin = JSON.parse(localStorage.getItem("loggedInAdmin"));
+  //   if (!loggedInAdmin) {
+  //     navigate("/admin/login", { replace: true });
+  //   }
+  // }, [navigate]);
 
   const handleSignOut = () => {
     localStorage.removeItem("loggedInAdmin");
-    navigate("/admin/login");
+    navigate("/admin/login", { replace: true });
   };
 
+  // Fetch dashboard counts
   useEffect(() => {
-    const loggedInAdmin = JSON.parse(localStorage.getItem("loggedInAdmin"));
-    if (!loggedInAdmin) return;
-
     async function fetchDashboardData() {
       try {
-        const [users, adoptions, appointments] = await Promise.all([
+        const [users, adoptions, appts] = await Promise.all([
           fetch(`${API_BASE_URL}/users/count`).then((res) => res.json()),
           fetch(`${API_BASE_URL}/adoptions/pending/count`).then((res) => res.json()),
           fetch(`${API_BASE_URL}/appointments/scheduled/count`).then((res) => res.json()),
@@ -75,7 +44,7 @@ function DashboardPage() {
 
         setUserCount(users.count || 0);
         setPendingAdoptions(adoptions.count || 0);
-        setScheduledAppointments(appointments.count || 0);
+        setScheduledAppointments(appts.count || 0);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
@@ -83,26 +52,22 @@ function DashboardPage() {
 
     fetchDashboardData();
   }, []);
-
+ // Fetch tab data when switching
   useEffect(() => {
     async function fetchTabData() {
       try {
         if (activeTab === "pets") {
           const res = await fetch(`${API_BASE_URL}/pets`);
-          const data = await res.json();
-          setPets(data || []);
+          setPets(await res.json());
         } else if (activeTab === "adoptions") {
           const res = await fetch(`${API_BASE_URL}/adoptions/pending`);
-          const data = await res.json();
-          setAdoptionRequests(data || []);
+          setAdoptionRequests(await res.json());
         } else if (activeTab === "appointments") {
           const res = await fetch(`${API_BASE_URL}/appointments`);
-          const data = await res.json();
-          setAppointments(data || []);
+          setAppointments(await res.json());
         } else if (activeTab === "messages") {
           const res = await fetch(`${API_BASE_URL}/messages`);
-          const data = await res.json();
-          setMessages(data || []);
+          setMessages(await res.json());
         }
       } catch (error) {
         console.error("Error fetching tab data:", error);
@@ -132,12 +97,6 @@ function DashboardPage() {
 
             {showSettingsMenu && (
               <div className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
-                <button
-                  onClick={goToChangePassword}
-                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >
-                  Change Password
-                </button>
                 <button
                   onClick={handleSignOut}
                   className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
@@ -170,8 +129,9 @@ function DashboardPage() {
             ))}
           </nav>
         </div>
-
-        {activeTab === "dashboard" && (
+        
+        {/* Dashboard Cards */}
+        {activeTab === "dashboard" && ( 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-md shadow p-6">
               <h2 className="text-lg font-semibold text-gray-700 mb-2">User Management</h2>
@@ -187,15 +147,6 @@ function DashboardPage() {
             </div>
           </div>
         )}
-
-        {showChangePasswordModal && (
-        <ChangePasswordModal
-          isOpen={showChangePasswordModal}
-          onClose={() => setShowChangePasswordModal(false)}
-          onChangePassword={handleChangePassword}
-        />
-      )}
-
       </div>
     </div>
   );
