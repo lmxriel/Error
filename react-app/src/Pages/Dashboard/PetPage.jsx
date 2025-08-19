@@ -186,16 +186,16 @@ function PetPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-200 text-sm text-gray-600">
-                <th className="py-3">Image</th>
-                <th className="py-3">Name</th>
-                <th className="py-3">Breed</th>
-                <th className="py-3">Size</th>
-                <th className="py-3">Gender</th>
-                <th className="py-3">Color</th>
-                <th className="py-3">Weight</th>
-                <th className="py-3">Medical</th>
-                <th className="py-3">Status</th>
-                <th className="py-3">Actions</th>
+                <th className="py-3 text-center">Image</th>
+                <th className="py-3 text-center">Name</th>
+                <th className="py-3 text-center">Breed</th>
+                <th className="py-3 text-center">Size</th>
+                <th className="py-3 text-center">Gender</th>
+                <th className="py-3 text center">Color</th>
+                <th className="py-3 text-center">Weight</th>
+                <th className="py-3 text-center">Medical</th>
+                <th className="py-3 text-center">Status</th>
+                <th className="py-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -211,13 +211,13 @@ function PetPage() {
                       className="w-12 h-12 rounded object-cover"
                     />
                   </td>
-                  <td className="py-2">{pet.name}</td>
-                  <td className="py-2">{pet.breed}</td>
-                  <td className="py-2">{pet.size}</td>
-                  <td className="py-2">{pet.gender}</td>
-                  <td className="py-2">{pet.color}</td>
-                  <td className="py-2">{pet.weight}</td>
-                  <td className="py-2">{pet.medical}</td>
+                  <td className="py-2 text-center">{pet.name}</td>
+                  <td className="py-2 text-center">{pet.breed}</td>
+                  <td className="py-2 text-center">{pet.size}</td>
+                  <td className="py-2 text-center">{pet.gender}</td>
+                  <td className="py-2 text-center">{pet.color}</td>
+                  <td className="py-2 text-center">{pet.weight}</td>
+                  <td className="py-2 text-center">{pet.medical}</td>
                   <td className="py-2 font-semibold">
                     {pet.status === "Approved" && (
                       <span className="text-green-600">Approved</span>

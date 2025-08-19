@@ -9,6 +9,7 @@ export default {
         "sidebar-bg": "#597445",
         "dashboard-bg": "#eef0ea",
         "gray-orange": '#a16f4a',
+        "maroon": "#560705",
       },
        colors: {
         'gray-orange': '#a16f4a',

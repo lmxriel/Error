@@ -188,21 +188,6 @@ function DashboardPage() {
           </div>
         )}
 
-        {activeTab === "messages" && (
-          <div className="bg-white p-6 rounded-md shadow">
-            <h2 className="text-lg font-semibold mb-4">Messages</h2>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200"></tr>
-              </thead>
-              <tbody>
-                {messages.map((msg, index) => (
-                  <tr key={index} className="border-t hover:bg-gray-50"></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
         {showChangePasswordModal && (
         <ChangePasswordModal
           isOpen={showChangePasswordModal}

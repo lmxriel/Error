@@ -9,7 +9,7 @@ function UserDashboardPage() {
   return (
     <div className="min-h-screen bg-[#f9f7f7] text-gray-900 relative overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center px-6 py-4 border-b border-gray-300">
+      <div className="absolute top-0 left-0 w-full flex justify-between items-center px-10 py-6 z-50">
         <div className="flex items-center gap-2">
           <img src={PawfectCareLogo} alt="Pawfect Care Logo" className="w-10 h-10" />
           <span className="text-2xl font-bold">Pawfect Care</span>
