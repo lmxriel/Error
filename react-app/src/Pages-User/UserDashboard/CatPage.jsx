@@ -15,9 +15,7 @@ const pets = [
     weight: "30kg",
     color: "Golden",
     status: {
-      medicalHistory: "Healthy",
-      spayedNeutered: "Yes",
-      vaccinationHistory: "Up-to-date"
+      medicalHistory: "Anti-Rabies",
     }
   },
   { 
@@ -32,8 +30,6 @@ const pets = [
     color: "Black & Tan",
     status: {
       medicalHistory: "Injured",
-      spayedNeutered: "No",
-      vaccinationHistory: "Rabies done"
     }
   },
   { 
@@ -48,8 +44,6 @@ const pets = [
     color: "White & Gray",
     status: {
       medicalHistory: "Healthy",
-      spayedNeutered: "Yes",
-      vaccinationHistory: "Up-to-date"
     }
   },
   { 
@@ -64,8 +58,6 @@ const pets = [
     color: "Brown",
     status: {
       medicalHistory: "Asthma",
-      spayedNeutered: "No",
-      vaccinationHistory: "Rabies done"
     }
   },
 ]; 
@@ -191,14 +183,6 @@ function CatPage() {
                   <div className="bg-green-100 p-3 rounded-lg shadow-sm">
                     <p className="text-sm text-gray-500">History</p>
                     <p className="font-medium">{selectedCat.status?.medicalHistory}</p>
-                  </div>
-                  <div className="bg-blue-100 p-3 rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500">Spayed/Neutered</p>
-                    <p className="font-medium">{selectedCat.status?.spayedNeutered}</p>
-                  </div>
-                  <div className="bg-yellow-100 p-3 rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500">Vaccination</p>
-                    <p className="font-medium">{selectedCat.status?.vaccinationHistory}</p>
                   </div>
                 </div>
 

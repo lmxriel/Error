@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import OVSLogo from "../../assets/OVSLogo.png";
-import { Trash2 } from "lucide-react"; // icon library (lucide-react)
+import { Trash2 } from "lucide-react";
 
 function getInitials(name) {
   return name
@@ -11,6 +12,7 @@ function getInitials(name) {
 }
 
 function MessagesPage() {
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [reply, setReply] = useState("");
@@ -111,26 +113,36 @@ function MessagesPage() {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); // prevent newline
+      e.preventDefault();
       sendReply();
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-100 relative overflow-hidden">
-      {/* Messages List */}
+    <div className="min-h-screen flex bg-gray-100">
       <div className="flex-grow p-6">
-        <div className="flex items-center mb-6">
-          <img
-            className="w-10 h-10 rounded-full mr-3"
-            src={OVSLogo}
-            alt="Logo"
-          />
-          <h1 className="text-xl font-semibold text-gray-800">
-            Tacurong City Veterinary Services Office
-          </h1>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <img className="w-10 h-10 rounded-full mr-3" src={OVSLogo} alt="Logo" />
+            <h1 className="text-xl font-semibold text-gray-800">
+              Tacurong City Veterinary Services Office
+            </h1>
+          </div>
         </div>
 
+        {/* Tabs */}
+        <div className="bg-white rounded-md shadow mb-6">
+          <nav className="flex space-x-4 p-2">
+            <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">Dashboard</button>
+            <button onClick={() => navigate("/pets")} className="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">Pets</button>
+            <button onClick={() => navigate("/adoptions/pending")} className="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">Adoptions</button>
+            <button onClick={() => navigate("/appointments")} className="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">Appointments</button>
+            <button onClick={() => navigate("/messages")} className="px-4 py-2 rounded-md bg-gray-900 text-white">Messages</button>
+          </nav>
+        </div>
+
+        {/* Messages List */}
         <div className="bg-white rounded-md shadow divide-y divide-gray-200">
           {conversations.length === 0 ? (
             <p className="text-center p-6 text-gray-500">No messages found.</p>
@@ -173,15 +185,8 @@ function MessagesPage() {
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold">
-                {selectedMessage.subject}
-              </h2>
-              <button
-                onClick={closeConversation}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
+              <h2 className="text-lg font-semibold">{selectedMessage.subject}</h2>
+              <button onClick={closeConversation} className="text-gray-500 hover:text-gray-700">✕</button>
             </div>
 
             {/* Messages */}

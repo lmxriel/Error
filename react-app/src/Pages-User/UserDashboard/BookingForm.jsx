@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ⬅️ import navigate
 import BookingConfirmationModal from "../../Components/Modals/BookingConfirmationModal";
 
 function BookingForm() {
@@ -11,6 +12,7 @@ function BookingForm() {
   });
 
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate(); // ⬅️ hook for navigation
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,8 +25,10 @@ function BookingForm() {
 
     setShowModal(true);
 
+    // ⬅️ After 2 seconds, close modal + navigate back
     setTimeout(() => {
       setShowModal(false);
+      navigate("/booking"); // change "/booking" to your actual booking route
     }, 2000);
   };
 
@@ -78,7 +82,9 @@ function BookingForm() {
           <option value="Vaccination">Vaccination</option>
         </select>
 
-        <label className="block mb-2 text-sm font-medium text-gray-700">Date</label>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Date
+        </label>
         <input
           type="date"
           name="date"
@@ -91,7 +97,9 @@ function BookingForm() {
           placeholder="mm/dd/yyyy"
         />
 
-        <label className="block mb-2 text-sm font-medium text-gray-700">Time</label>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Time
+        </label>
         <input
           type="time"
           name="time"

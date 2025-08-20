@@ -16,8 +16,6 @@ const pets = [
     color: "Golden",
     status: {
       medicalHistory: "Healthy",
-      spayedNeutered: "Yes",
-      vaccinationHistory: "Up-to-date"
     }
   },
   { 
@@ -32,8 +30,6 @@ const pets = [
     color: "Black & Tan",
     status: {
       medicalHistory: "Injured",
-      spayedNeutered: "No",
-      vaccinationHistory: "Rabies done"
     }
   },
   { 
@@ -48,8 +44,6 @@ const pets = [
     color: "White & Gray",
     status: {
       medicalHistory: "Healthy",
-      spayedNeutered: "Yes",
-      vaccinationHistory: "Up-to-date"
     }
   },
   { 
@@ -64,8 +58,6 @@ const pets = [
     color: "Brown",
     status: {
       medicalHistory: "Asthma",
-      spayedNeutered: "No",
-      vaccinationHistory: "Rabies done"
     }
   },
 ]; 
@@ -189,14 +181,6 @@ function AllPetPage() {
                   <div className="bg-green-100 p-3 rounded-lg shadow-sm">
                     <p className="text-sm text-gray-500">History</p>
                     <p className="font-medium">{selectedPet.status?.medicalHistory}</p>
-                  </div>
-                  <div className="bg-blue-100 p-3 rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500">Spayed/Neutered</p>
-                    <p className="font-medium">{selectedPet.status?.spayedNeutered}</p>
-                  </div>
-                  <div className="bg-yellow-100 p-3 rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500">Vaccination</p>
-                    <p className="font-medium">{selectedPet.status?.vaccinationHistory}</p>
                   </div>
                 </div>
 

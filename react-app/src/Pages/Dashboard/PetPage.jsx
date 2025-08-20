@@ -3,9 +3,7 @@ import OVSLogo from "../../assets/OVSLogo.png";
 import Delete from "../../assets/Delete.svg";
 import Edit from "../../assets/Edit.svg";
 import { useNavigate } from "react-router-dom";
-/* What to do? fix the add pets which is the create in the database and also in the frontend there is more problem 
-  in the frontend than backend immediate fix add setEditng or add another which is setAddingPet instead
-  this will finish the crud for the pets in the admin side next will be the adoption phase😒😒😒 */
+
 function PetPage() {
   const navigate = useNavigate();
   const [pets, setPets] = useState([]);
@@ -22,33 +20,33 @@ function PetPage() {
     size: "",
     gender: "",
     weight: "",
-    medical: "",
+    medical: [], // ✅ array instead of string
+    otherMedical: "",
     color: "",
     status: "Available",
-    image: "",       // ✅ URL string for preview
-    imageFile: null, // ✅ actual file for upload
+    image: "",
+    imageFile: null,
   });
-
-  useEffect(() => {
-    fetch("http://localhost:8081/api/pets")
-      .then((res) => res.json())
-      .then((data) => setPets(data))
-      .catch((err) => console.error("Error fetching pets:", err));
-  }, []);
-
-  const fetchPets = () => {
-  fetch("http://localhost:8081/api/pets")
-    .then((res) => res.json())
-    .then((data) => setPets(data))
-    .catch((err) => console.error("Error fetching pets:", err));
-  };
 
   useEffect(() => {
     fetchPets();
   }, []);
-  
+
+  const fetchPets = () => {
+    fetch("http://localhost:8081/api/pets")
+      .then((res) => res.json())
+      .then((data) => setPets(data))
+      .catch((err) => console.error("Error fetching pets:", err));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    let medicalHistory = [...formData.medical];
+    if (medicalHistory.includes("Other") && formData.otherMedical.trim() !== "") {
+      medicalHistory = medicalHistory.filter((m) => m !== "Other");
+      medicalHistory.push(`Other: ${formData.otherMedical.trim()}`);
+    }
 
     const formDataToSend = new FormData();
     formDataToSend.append("name", formData.name || "");
@@ -58,7 +56,8 @@ function PetPage() {
     formDataToSend.append("weight", formData.weight || "");
     formDataToSend.append("color", formData.color || "");
     formDataToSend.append("status", formData.status || "");
-    formDataToSend.append("medical", formData.medical || "");
+    // ✅ convert medical array to comma-separated string
+    formDataToSend.append("medical", medicalHistory.join(", "));
 
     if (formData.imageFile) {
       formDataToSend.append("image", formData.imageFile);
@@ -74,12 +73,10 @@ function PetPage() {
 
     await fetch(url, {
       method,
-      body: formDataToSend
+      body: formDataToSend,
     });
 
-    // ✅ Refresh data from backend
     fetchPets();
-
     closeForm();
   };
 
@@ -93,22 +90,23 @@ function PetPage() {
       setPetToDelete(null);
     }
   };
+
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-    const handleImageChange = (e) => {
-  const file = e.target.files[0];
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        imageFile: file
+        imageFile: file,
       }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({
           ...prev,
-          image: reader.result // For preview only
+          image: reader.result,
         }));
       };
       reader.readAsDataURL(file);
@@ -116,8 +114,24 @@ function PetPage() {
   };
 
   //Open form
-   const openForm = (pet = null) => {
+  const openForm = (pet = null) => {
     if (pet) {
+      let medicalArr = pet.medical ? pet.medical.split(",").map((m) => m.trim()) : [];
+      let otherMedicalText = "";
+
+      // Extract "Other: xxx" if present
+      medicalArr = medicalArr.filter((m) => {
+        if (m.startsWith("Other:")) {
+          otherMedicalText = m.replace("Other:", "").trim();
+          return false;
+        }
+        return true;
+      });
+
+      if (otherMedicalText) {
+        medicalArr.push("Other");
+      }
+
       setEditingPet(pet);
       setFormData({
         name: pet.name || "",
@@ -125,10 +139,11 @@ function PetPage() {
         size: pet.size || "",
         gender: pet.gender || "",
         weight: pet.weight || "",
-        medical: pet.medical || "",
+        medical: medicalArr,
+        otherMedical: otherMedicalText,
         color: pet.color || "",
         status: pet.status || "Available",
-        image: pet.image || "",
+        image: pet.image || pet.imageUrl || "",
         imageFile: null,
       });
     } else {
@@ -139,7 +154,8 @@ function PetPage() {
         size: "",
         gender: "",
         weight: "",
-        medical: "",
+        medical: [],
+        otherMedical: "",
         color: "",
         status: "Available",
         image: "",
@@ -158,23 +174,23 @@ function PetPage() {
       size: "",
       gender: "",
       weight: "",
-      medical: "",
+      medical: [],
+      otherMedical: "",
       color: "",
       status: "Available",
       image: "",
       imageFile: null,
     });
   };
+
   // Open delete handler
-  const openDeleteModal = (pet) => 
-  {
-  setPetToDelete(pet);
-  setShowDeleteModal(true);
+  const openDeleteModal = (pet) => {
+    setPetToDelete(pet);
+    setShowDeleteModal(true);
   };
 
   // Cancel delete handler
-  const cancelDelete = () => 
-  {
+  const cancelDelete = () => {
     setShowDeleteModal(false);
     setPetToDelete(null);
   };
@@ -190,7 +206,6 @@ function PetPage() {
               Tacurong City Veterinary Services Office
             </h1>
           </div>
-          <div className="flex items-center space-x-4"></div>
         </div>
 
         {/* Tabs */}
@@ -259,12 +274,12 @@ function PetPage() {
             <tbody>
               {pets.map((pet) => (
                 <tr
-                  key={pet.pet_id} // ✅ unique and stable
+                  key={pet.pet_id}
                   className="border-t border-gray-100 hover:bg-gray-50 transition"
                 >
                   <td className="py-2">
                     <img
-                      src={pet.imageUrl} // already base64 string
+                      src={pet.imageUrl || pet.image}
                       className="w-12 h-12 rounded object-cover"
                       alt={pet.name}
                     />
@@ -292,17 +307,16 @@ function PetPage() {
                       onClick={() => openForm(pet)}
                       className="text-blue-500 hover:underline"
                     >
-                    <img src={Edit} alt="Edit Icon" className="h-6 w-6 relative top-1" />
+                      <img src={Edit} alt="Edit Icon" className="h-6 w-6 relative top-1" />
                     </button>
                     <button
-                    onClick={() => openDeleteModal(pet)}
-                    className="hover:opacity-70"
-                    aria-label={`Delete ${pet.name}`}
-                    title="Delete"
-                  >
-                    <img src={Delete} alt="Delete Icon" className="h-7 w-7 relative top-1" />
-                  </button>
-
+                      onClick={() => openDeleteModal(pet)}
+                      className="hover:opacity-70"
+                      aria-label={`Delete ${pet.name}`}
+                      title="Delete"
+                    >
+                      <img src={Delete} alt="Delete Icon" className="h-7 w-7 relative top-1" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -372,29 +386,69 @@ function PetPage() {
                   onChange={handleChange}
                   className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
-                <input
-                  type="text"
-                  name="medical" // ✅ matches formData.medical
-                  placeholder="Medical Status"
-                  value={formData.medical}
-                  onChange={handleChange} // ✅ will now update the correct state property
-                  className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
+
+                {/* Medical History */}
                 <div>
-                  <label className="block mb-1 font-medium">Upload Image</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                    {formData.image && (
-                      <img
-                        src={formData.image}
-                        alt="Preview"
-                        className="mt-2 w-24 h-24 object-cover rounded"
+                  <label className="block mb-1 font-medium">Medical History</label>
+                  <div className="space-y-2">
+                    {["Vaccinated", "Dewormed", "Spayed/Neutered", "Other"].map(
+                      (option) => (
+                        <div key={option} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            name="medical"
+                            value={option}
+                            checked={formData.medical?.includes(option)}
+                            onChange={(e) => {
+                              const { value, checked } = e.target;
+                              let updatedMedical = [...(formData.medical || [])];
+
+                              if (checked) {
+                                updatedMedical.push(value);
+                              } else {
+                                updatedMedical = updatedMedical.filter((item) => item !== value);
+                              }
+
+                              setFormData({ ...formData, medical: updatedMedical });
+                            }}
+                            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                          <span>{option}</span>
+                        </div>
+                      )
+                    )}
+
+                    {/* Show text field when "Other" is selected */}
+                    {formData.medical?.includes("Other") && (
+                      <input
+                        type="text"
+                        name="otherMedical"
+                        placeholder="Please specify"
+                        value={formData.otherMedical || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, otherMedical: e.target.value })
+                        }
+                        className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mt-2"
                       />
                     )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block mb-1 font-medium">Upload Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="border p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                  {formData.image && (
+                    <img
+                      src={formData.image}
+                      alt="Preview"
+                      className="mt-2 w-24 h-24 object-cover rounded"
+                    />
+                  )}
                 </div>
 
                 <select
@@ -412,7 +466,7 @@ function PetPage() {
                 <div className="flex justify-end space-x-2 pt-3">
                   <button
                     type="button"
-                    onClick={() => setShowForm(false)}
+                    onClick={closeForm}
                     className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
                   >
                     Cancel

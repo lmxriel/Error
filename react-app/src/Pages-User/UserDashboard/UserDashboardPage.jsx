@@ -123,7 +123,7 @@ function UserDashboardPage() {
         <div className="text-center mb-6">
           
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 text-sm gap-8 text-center md:text-left">
+        <div className="grid grid-cols-1 md:grid-cols-4 text-m gap-8 text-center md:text-left">
           <div>
             <h4 className="font-semibold mb-2">Location:</h4>
             <p>Office of Veterinary Services,<br />
