@@ -3,6 +3,10 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+        roboto: ['Roboto', 'sans-serif'],
+      },
       backgroundColor: {
         "login-bg": "#658147",
         "login-frame-bg": "#E7F0DC",
@@ -13,6 +17,10 @@ export default {
       },
        colors: {
         'gray-orange': '#a16f4a',
+        'light-blue': '#cad0e8',
+        'light-orange': '#e9e3d8',
+        'pastel gray-blue': '#a9b2d6',
+        'pastel gray-orance': '#dbcdb4',
       },
       width: {
         "360px": "360px",

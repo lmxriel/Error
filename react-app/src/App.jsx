@@ -12,15 +12,22 @@ import {
   UserLoginRoute,
   UserDashboardRoute,
   UserAdoptionRoute,
+  UserDogPageRoute,
+  UserCatPageRoute,
+  UserAllPetPageRoute,
   UserRegistrationRoute,
   UserBookingRoute,
   UserBookingFormRoute,
+  UserAdoptionFormRoute,
 } from "./Routes/UserRoutes/UserRoutes";
 const routers = createBrowserRouter([
   LoginRoute,
   PetRoute,
   DashboardRoute,
   AdoptionRequestRoute,
+  UserDogPageRoute,
+  UserCatPageRoute,
+  UserAllPetPageRoute,
   AppointmentPageRoute,
   MessagesPageRoute,
   ConversationPageRoute,
@@ -30,6 +37,7 @@ const routers = createBrowserRouter([
   UserRegistrationRoute,
   UserBookingRoute,
   UserBookingFormRoute,
+  UserAdoptionFormRoute,
 ]);
 
 function App() {

@@ -4,27 +4,57 @@ import DogAndCat from "../../assets/DogAndCatImage.png";
 import PawfectCareLogo from "../../assets/PawfectCareLogo.svg";
 
 function UserDashboardPage() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const delayedNavigate = (path) => {
+      setTimeout(() => {
+        navigate(path);
+      }, 300); // 800ms delay (change as needed)
+    };
 
   return (
     <div className="min-h-screen bg-[#f9f7f7] text-gray-900 relative overflow-hidden">
       {/* Header */}
-      <div className="absolute top-0 left-0 w-full flex justify-between items-center px-10 py-6 z-50">
-        <div className="flex items-center gap-2">
-          <img src={PawfectCareLogo} alt="Pawfect Care Logo" className="w-10 h-10" />
-          <span className="text-2xl font-bold">Pawfect Care</span>
-        </div>
-        <div className="flex-grow flex justify-center ml-[-150px] gap-10 text-sm font-medium">
-          <button onClick={() => navigate("/")} className="hover:text-[#ff7e67] transition-colors font-bold underline">About Us</button>
-          <button onClick={() => navigate("/adoption")} className="hover:text-[#ff7e67] transition-colors">Adoption</button>
-          <button onClick={() => navigate("/booking")} className="hover:text-[#ff7e67] transition-colors">Book</button>
-        </div>
-        <div>
-          <button onClick={() => navigate("/user/login")} className="px-4 py-1 border border-black rounded-full hover:bg-black hover:text-white transition">
-            Sign in
-          </button>
-        </div>
-      </div>
+      <header className="fixed top-0 left-0 w-full flex items-center px-10 py-3 z-50 bg-white shadow-md carret-transparent">
+             {/* Left: Logo */}
+             <div className="flex items-center gap-2">
+               <img
+                 src={PawfectCareLogo}
+                 alt="Pawfect Care Logo"
+                 className="w-10 h-10"
+               />
+               <span className="text-2xl font-bold">Pawfect Care</span>
+             </div>
+     
+             {/* Center: Navigation */}
+             <nav className="flex-grow flex justify-center gap-10 text-sm font-medium">
+               <button
+                 onClick={() => delayedNavigate("/")}
+                 className="hover:text-[#ff7e67] transition-colors font-bold text-lg underline"
+               >
+                 About Us
+               </button>
+               <button
+                 onClick={() => delayedNavigate("/adoption")}
+                 className="hover:text-[#ff7e67] transition-colors font-bold text-lg "
+               >
+                 Adoption
+               </button>
+               <button
+                 onClick={() => delayedNavigate("/booking")}
+                 className="hover:text-[#ff7e67] transition-colors font-bold text-lg"
+               >
+                 Book
+               </button>
+             </nav>
+     
+             {/* Right: Sign in */}
+             <button
+               onClick={() => navigate("/user/login")}
+               className="ml-auto px-8 py-3 border border-black rounded-full hover:bg-black hover:text-white transition"
+             >
+               Sign in
+             </button>
+           </header>
 
       {/* Hero Section */}
         <div className="-mt-1 w-full">
